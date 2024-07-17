@@ -4,16 +4,16 @@ info:
   description: |-
     The Chainlabs API provides an automated way of retrieving traced seed addresses, corresponding metadata, and screenshot proofs to replace the monthly manual CSV deliveries.
     
-    To obtain all the hisorical as well as newly added entities, traces, and screnshots, use the */get_** endpoints. To get modification/deletion events that have taken place on existing data, use the *sync_** endpoints and modify/delete entities or traces on your local data based on them. 
+    To obtain all the historical as well as newly added entities, traces, and screenshots, use the */entities*, */traces*, */entity_screenshots*, and */trace_screenshots* endpoints. To get modification/deletion events that have taken place on existing data, use the */sync_entities* and */sync_traces* endpoints and modify/delete entities or traces on your local data based on them. 
   version: 1.0.1
 paths:
-  /get_entities:
+  /entities:
     get:
       tags:
         - Entities
       summary: Get entities filtered by entityIds, categoryIds, entityName, URL, dateTimeAdded
-      description: Returns the metadata for the entities that match the criteria provided in the request. All entities are returned if the request is empty.
-      operationId: getEntities
+      description: Returns the metadata for the entities that match the criteria provided in the request. The metadata will have fields specific to the category of the entity. All entities are returned if the request is empty.
+      operationId: entities
       requestBody:
         $ref: '#/components/requestBodies/GetEntitiesRequest'
       responses:
@@ -24,20 +24,28 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Entity'
+                  anyOf:
+                    - $ref: '#/components/schemas/Atm'
+                    - $ref: '#/components/schemas/Crim'
+                    - $ref: '#/components/schemas/Csam'
+                    - $ref: '#/components/schemas/Dnm'
+                    - $ref: '#/components/schemas/Fct'
+                    - $ref: '#/components/schemas/Gm'
+                    - $ref: '#/components/schemas/Psp'
+                    - $ref: '#/components/schemas/Vnh'
         '400':
           description: Invalid request
         '404':
           description: Entity not found
         '422':
           description: Validation exception
-  /get_traces:
+  /traces:
     get:
       tags:
         - Traces
       summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, dateTimeAdded
       description: Returns the traces that match the criteria provided in the request. All traces are returned if the request is empty.
-      operationId: getTraces
+      operationId: traces
       requestBody:
         $ref: '#/components/requestBodies/GetTracesRequest'
       responses:
@@ -55,13 +63,13 @@ paths:
           description: Trace not found
         '422':
           description: Validation exception
-  /get_entity_screenshots:
+  /entity_screenshots:
     get:
       tags:
         - Screenshots
       summary: Get entity screenshots filtered by entityIds, categoryIds, dateTimeAdded
       description: Returns a .zip containing the screenshot proofs for the entities that match the criteria provided in the request. All screenshots are returned if the request is empty.
-      operationId: getEntityScreenshots
+      operationId: entityScreenshots
       requestBody:
         $ref: '#/components/requestBodies/GetEntityScreenshotsRequest'
       responses:
@@ -77,13 +85,13 @@ paths:
           description: Entity screenshot not found
         '422':
           description: Validation exception
-  /get_trace_screenshots:
+  /trace_screenshots:
     get:
       tags:
         - Screenshots
       summary: Get trace screenshots filtered by traceIds, entityIds, categoryIds, dateTimeAdded
       description: Returns a .zip containing the screenshot proofs for the traces that match the criteria provided in the request. All screenshots are returned if the request is empty.
-      operationId: getTraceScreenshots
+      operationId: traceScreenshots
       requestBody:
         $ref: '#/components/requestBodies/GetTraceScreenshotsRequest'
       responses:
@@ -155,7 +163,7 @@ components:
           example: 10
         name:
           type: string
-          example: hello
+          example: Binance
         categoryId:
           type: string
           example: cex
@@ -164,13 +172,259 @@ components:
           items:
             type: string
             example: https://binance.com
-        status:
-          type: string
-          example: Open
         dateTimeAdded:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
+        dateTimeUpdated:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+    Atm:
+      description: The metadata for an ATM entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            atmId:
+              type: string
+              example: id
+            atmStatus:
+              type: string
+              example: Operating
+            countryOfIncorporation:
+              type: string
+              example: US
+            countryOfOperation:
+              type: string
+              example: US
+            kycInputDate:
+              type: string
+              format: date
+              example: 2017-07-21
+            kycNotes:
+              type: string
+              example: note
+            kycVerification:
+              type: array
+              items:
+                type: string
+                example: Passport
+            location:
+              type: string
+              example: https://maps.app.goo.gl/oe4QrRpohBPHZZVy8
+            operatedBy:
+              type: string
+            osint:
+              type: string
+            supportedFiat:
+              type: array
+              items:
+                type: string
+                example: USD
+    Crim:
+      description: The metadata for a Criminal Enterprise entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            tags:
+              type: array
+              items:
+                type: string
+                example: Violent Crimes
+            osint:
+              type: string
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
+    Csam:
+      description: The metadata for a CSAM entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            tags:
+              type: array
+              items:
+                type: string
+                example: Darkweb
+            mediaTypes:
+              type: array
+              items:
+                type: string
+                example: Videos
+            osint:
+              type: string
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
+    Dnm:
+      description: The metadata for a Darknet Market entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            tags:
+              type: array
+              items:
+                type: string
+                example: Darkweb
+            marketRules:
+              type: string
+              example: rules
+            osint:
+              type: string
+            productsAndServices:
+              type: array
+              items:
+                type: string
+                example: Drugs
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
+    Fct:
+      description: The metadata for a Faucet entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            osint:
+              type: string
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
+    Gm:
+      description: The metadata for a Gambling entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            tags:
+              type: array
+              items:
+                type: string
+                example: Centralized
+            countryOfIncorporation:
+              type: string
+              example: US
+            kycInputDate:
+              type: string
+              format: date
+              example: 2017-07-21
+            kycVerification:
+              type: array
+              items:
+                type: string
+                example: Passport
+            osint:
+              type: string
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
+    Psp:
+      description: The metadata for a Payment Service Provider entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            countryOfIncorporation:
+              type: string
+              example: US
+            osint:
+              type: string
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
+    Vnh:
+      description: The metadata for a VPN and Hosting entity
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            operationalStatus:
+              type: string
+              example: Open
+            tags:
+              type: array
+              items:
+                type: string
+                example: Clearnet
+            countryOfIncorporation:
+              type: string
+              example: US
+            osint:
+              type: string
+            isScam:
+              type: string
+              example: Yes
+            scamSource:
+              type: string
+              example: https://source-link.com
+            createdDate:
+              type: string
+              format: date
+              example: 2020
     Trace:
       description: The trace object contains all the information about a Chainlabs tracing transaction, including the seed address and entity label
       type: object
