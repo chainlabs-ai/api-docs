@@ -2,16 +2,18 @@ openapi: 3.0.3
 info:
   title: Chainlabs API
   description: |-
+    ### *The API is still in the design stage and things are subject to change. In fact, your input will be appreciated. Many more categories are yet to be added to the schema, for example, Centralized exchanges, DeFi, etc.* 
+    
     The Chainlabs API provides an automated way of retrieving traced seed addresses, corresponding metadata, and screenshot proofs to replace the monthly manual CSV deliveries.
     
     To obtain all the historical as well as newly added entities, traces, and screenshots, use the */entities*, */traces*, */entity_screenshots*, and */trace_screenshots* endpoints. To get modification/deletion events that have taken place on existing data, use the */sync_entities* and */sync_traces* endpoints and modify/delete entities or traces on your local data based on them. 
   version: 1.0.1
 paths:
   /entities:
-    get:
+    post:
       tags:
         - Entities
-      summary: Get entities filtered by entityIds, categoryIds, entityName, URL, dateTimeAdded
+      summary: Get entities filtered by entityIds, categoryIds, entityName, URL, dateTimeAddedFrom, dateTimeAddedTo
       description: Returns the metadata for the entities that match the criteria provided in the request. The metadata will have fields specific to the category of the entity. All entities are returned if the request is empty.
       operationId: entities
       requestBody:
@@ -40,10 +42,10 @@ paths:
         '422':
           description: Validation exception
   /traces:
-    get:
+    post:
       tags:
         - Traces
-      summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, dateTimeAdded
+      summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, dateTimeAddedFrom, dateTimeAddedTo
       description: Returns the traces that match the criteria provided in the request. All traces are returned if the request is empty.
       operationId: traces
       requestBody:
@@ -64,10 +66,10 @@ paths:
         '422':
           description: Validation exception
   /entity_screenshots:
-    get:
+    post:
       tags:
         - Screenshots
-      summary: Get entity screenshots filtered by entityIds, categoryIds, dateTimeAdded
+      summary: Get entity screenshots filtered by entityIds, categoryIds, dateTimeAddedFrom, dateTimeAddedTo
       description: Returns a .zip containing the screenshot proofs for the entities that match the criteria provided in the request. All screenshots are returned if the request is empty.
       operationId: entityScreenshots
       requestBody:
@@ -86,10 +88,10 @@ paths:
         '422':
           description: Validation exception
   /trace_screenshots:
-    get:
+    post:
       tags:
         - Screenshots
-      summary: Get trace screenshots filtered by traceIds, entityIds, categoryIds, dateTimeAdded
+      summary: Get trace screenshots filtered by traceIds, entityIds, categoryIds, dateTimeAddedFrom, dateTimeAddedTo
       description: Returns a .zip containing the screenshot proofs for the traces that match the criteria provided in the request. All screenshots are returned if the request is empty.
       operationId: traceScreenshots
       requestBody:
@@ -108,10 +110,10 @@ paths:
         '422':
           description: Validation exception
   /sync_entities:
-    get:
+    post:
       tags:
         - Entities
-      summary: Get sync events (modification/deletion) for existing entities
+      summary: Get sync events (modification/deletion) for existing entities filtered by entityIds, dateTimeUpdatedFrom, dateTimeUpdatedTo
       description: Returns sync events (modification/deletion) for the entities that match the criteria provided in the request. All sync events are returned if the request is empty.
       operationId: syncEntities
       requestBody:
@@ -122,7 +124,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SyncResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyncEvent'
         '400':
           description: Invalid request
         '404':
@@ -130,10 +134,10 @@ paths:
         '422':
           description: Validation exception
   /sync_traces:
-    get:
+    post:
       tags:
         - Traces
-      summary: Get sync events (modification/deletion) for existing traces
+      summary: Get sync events (modification/deletion) for existing traces filtered by traceIds, dateTimeUpdatedFrom, dateTimeUpdatedTo
       description: Returns sync events (modification/deletion) for the traces that match the criteria provided in the request. All sync events are returned if the request is empty.
       operationId: syncTraces
       requestBody:
@@ -144,7 +148,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SyncResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SyncEvent'
         '400':
           description: Invalid request
         '404':
@@ -198,10 +204,6 @@ components:
             countryOfOperation:
               type: string
               example: US
-            kycInputDate:
-              type: string
-              format: date
-              example: 2017-07-21
             kycNotes:
               type: string
               example: note
@@ -244,10 +246,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Csam:
       description: The metadata for a CSAM entity
       allOf:
@@ -275,10 +273,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Dnm:
       description: The metadata for a Darknet Market entity
       allOf:
@@ -309,10 +303,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Fct:
       description: The metadata for a Faucet entity
       allOf:
@@ -330,10 +320,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Gm:
       description: The metadata for a Gambling entity
       allOf:
@@ -368,10 +354,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Psp:
       description: The metadata for a Payment Service Provider entity
       allOf:
@@ -392,10 +374,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Vnh:
       description: The metadata for a VPN and Hosting entity
       allOf:
@@ -421,10 +399,6 @@ components:
             scamSource:
               type: string
               example: https://source-link.com
-            createdDate:
-              type: string
-              format: date
-              example: 2020
     Trace:
       description: The trace object contains all the information about a Chainlabs tracing transaction, including the seed address and entity label
       type: object
@@ -460,7 +434,7 @@ components:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
-    SyncResponse:
+    SyncEvent:
       description: The sync event information for entities/traces that have been modified/deleted
       type: object
       properties:
@@ -491,7 +465,8 @@ components:
         2. categoryIds- List of categoryIds
         3. entityNameRegex- Regular expression on the entity name
         4. urlRegex- Regular expression on the url
-        5. dateTimeAddedRegex- Regular expression on the timestamp string when the entity was made available
+        5. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
+        6. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
       required: false
       content:
         application/json:
@@ -515,9 +490,14 @@ components:
               urlRegex:
                 type: string
                 example: "*binanc*"
-              dateTimeAddedRegex:
+              dateTimeAddedFrom:
                 type: string
-                example: "0[1-9]-07-2024"
+                format: date-time
+                example: 2017-07-21T17:32:28Z
+              dateTimeAddedTo:
+                type: string
+                format: date-time
+                example: 2017-07-21T17:32:28Z
     GetTracesRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned traces against:
@@ -526,7 +506,8 @@ components:
         3. categoryIds- List of categoryIds
         4. tokens- List of digitial tokens/coins (BTC, LTC, XRP, ETH, SOL, ALGO, BNB (BEP20), ADA, DOGE, MATIC, BCH, ZEC, DASH, TRX, EOS, XMR, DOT, FTM, XLM, ATOM)
         5. transactionTypes- List of transaction types (deposit, withdraw, direct, deposit)
-        6. dateTimeAddedRegex- Regular expression on the timestamp string when the trace was made available
+        6. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
+        7. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
       required: false
       content:
         application/json:
@@ -565,15 +546,21 @@ components:
                   - direct
                   - external
                   example: deposit
-              dateTimeAddedRegex:
+              dateTimeAddedFrom:
                 type: string
-                example: "0[1-9]-07-2024"
+                format: date-time
+                example: 2017-07-21T17:32:28Z
+              dateTimeAddedTo:
+                type: string
+                format: date-time
+                example: 2017-07-21T17:32:28Z
     GetEntityScreenshotsRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned screenshots against:
         1. entityIds- List of entityIds
         2. categoryIds- List of categoryIds
-        3. dateTimeAddedRegex- Regular expression on the timestamp string when the screenshot was made available
+        3. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
+        4. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
       required: false
       content:
         application/json:
@@ -591,16 +578,22 @@ components:
                 items:
                   type: string
                   example: cex
-              dateTimeAddedRegex:
+              dateTimeAddedFrom:
                 type: string
-                example: "0[1-9]-07-2024"
+                format: date-time
+                example: 2017-07-21T17:32:28Z
+              dateTimeAddedTo:
+                type: string
+                format: date-time
+                example: 2017-07-21T17:32:28Z
     GetTraceScreenshotsRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned screenshots against:
         1. traceIds- List of traceIds
         2. entityIds- List of entityIds
         3. categoryIds- List of categoryIds
-        4. dateTimeAddedRegex- Regular expression on the timestamp string when the screenshot was made available
+        4. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
+        5. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
       required: false
       content:
         application/json:
@@ -624,14 +617,20 @@ components:
                 items:
                   type: string
                   example: cex
-              dateTimeAddedRegex:
+              dateTimeAddedFrom:
                 type: string
-                example: "0[1-9]-07-2024"
+                format: date-time
+                example: 2017-07-21T17:32:28Z
+              dateTimeAddedTo:
+                type: string
+                format: date-time
+                example: 2017-07-21T17:32:28Z
     SyncRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned sync events against:
         1. ids- List of entityIds or traceIds for sync_entities or sync_traces respectively
-        2. dateTimeUpdatedRegex- Regular expression on the timestamp string when the sync event occured
+        2. dateTimeUpdatedFrom- Starting timestamp for the time range during which the entity was updated
+        3. dateTimeUpdatedTo- Ending timestamp for the time range during which the entity was updated
       required: false
       content:
         application/json:
@@ -644,6 +643,11 @@ components:
                   type: integer
                   format: int64
                   example: 10
-              dateTimeUpdatedRegex:
+              dateTimeUpdatedFrom:
                 type: string
-                example: "0[1-9]-07-2024"
+                format: date-time
+                example: 2017-07-21T17:32:28Z
+              dateTimeUpdatedTo:
+                type: string
+                format: date-time
+                example: 2017-07-21T17:32:28Z
