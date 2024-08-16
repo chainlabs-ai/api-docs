@@ -7,7 +7,7 @@ info:
     The Chainlabs API provides an automated way of retrieving traced seed addresses, corresponding metadata, and screenshot proofs to replace the monthly manual CSV deliveries.
     
     To obtain all the historical as well as newly added entities, traces, and screenshots, use the */entities*, */traces*, */entity_screenshots*, and */trace_screenshots* endpoints. To get modification/deletion events that have taken place on existing data, use the */sync_entities* and */sync_traces* endpoints and modify/delete entities or traces on your local data based on them. 
-  version: 1.0.1
+  version: 0.1.0
 paths:
   /entities:
     post:
@@ -17,30 +17,24 @@ paths:
       description: Returns the metadata for the entities that match the criteria provided in the request. The metadata will have fields specific to the category of the entity. All entities are returned if the request is empty.
       operationId: entities
       requestBody:
-        $ref: '#/components/requestBodies/GetEntitiesRequest'
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntitiesRequest'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  anyOf:
-                    - $ref: '#/components/schemas/Atm'
-                    - $ref: '#/components/schemas/Crim'
-                    - $ref: '#/components/schemas/Csam'
-                    - $ref: '#/components/schemas/Dnm'
-                    - $ref: '#/components/schemas/Fct'
-                    - $ref: '#/components/schemas/Gm'
-                    - $ref: '#/components/schemas/Psp'
-                    - $ref: '#/components/schemas/Vnh'
+                $ref: '#/components/schemas/EntitiesResponse'
         '400':
           description: Invalid request
-        '404':
-          description: Entity not found
-        '422':
-          description: Validation exception
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
   /traces:
     post:
       tags:
@@ -49,22 +43,24 @@ paths:
       description: Returns the traces that match the criteria provided in the request. All traces are returned if the request is empty.
       operationId: traces
       requestBody:
-        $ref: '#/components/requestBodies/GetTracesRequest'
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TracesRequest'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Trace'
+                $ref: '#/components/schemas/TracesResponse'
         '400':
           description: Invalid request
-        '404':
-          description: Trace not found
-        '422':
-          description: Validation exception
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
   /entity_screenshots:
     post:
       tags:
@@ -73,7 +69,11 @@ paths:
       description: Returns a .zip containing the screenshot proofs for the entities that match the criteria provided in the request. All screenshots are returned if the request is empty.
       operationId: entityScreenshots
       requestBody:
-        $ref: '#/components/requestBodies/GetEntityScreenshotsRequest'
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EntityScreenshotsRequest'
       responses:
         '200':
           description: Successful operation
@@ -83,10 +83,10 @@ paths:
                 type: object
         '400':
           description: Invalid request
-        '404':
-          description: Entity screenshot not found
-        '422':
-          description: Validation exception
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
   /trace_screenshots:
     post:
       tags:
@@ -95,7 +95,11 @@ paths:
       description: Returns a .zip containing the screenshot proofs for the traces that match the criteria provided in the request. All screenshots are returned if the request is empty.
       operationId: traceScreenshots
       requestBody:
-        $ref: '#/components/requestBodies/GetTraceScreenshotsRequest'
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraceScreenshotsRequest'
       responses:
         '200':
           description: Successful operation
@@ -105,10 +109,10 @@ paths:
                 type: object
         '400':
           description: Invalid request
-        '404':
-          description: Trace screenshot not found
-        '422':
-          description: Validation exception
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
   /sync_entities:
     post:
       tags:
@@ -117,22 +121,24 @@ paths:
       description: Returns sync events (modification/deletion) for the entities that match the criteria provided in the request. All sync events are returned if the request is empty.
       operationId: syncEntities
       requestBody:
-        $ref: '#/components/requestBodies/SyncRequest'
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncEntitiesRequest'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SyncEvent'
+                $ref: '#/components/schemas/SyncEntitiesResponse'
         '400':
           description: Invalid request
-        '404':
-          description: Sync entity event not found
-        '422':
-          description: Validation exception
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
   /sync_traces:
     post:
       tags:
@@ -141,22 +147,24 @@ paths:
       description: Returns sync events (modification/deletion) for the traces that match the criteria provided in the request. All sync events are returned if the request is empty.
       operationId: syncTraces
       requestBody:
-        $ref: '#/components/requestBodies/SyncRequest'
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncTracesRequest'
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SyncEvent'
+                $ref: '#/components/schemas/SyncTracesResponse'
         '400':
           description: Invalid request
-        '404':
-          description: Sync trace event not found
-        '422':
-          description: Validation exception
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
 components:
   schemas:
     Entity:
@@ -178,11 +186,21 @@ components:
           items:
             type: string
             example: https://binance.com
+        operationalStatus:
+              type: string
+              enum:
+                - Open
+                - Closed
+                - Updating
         dateTimeAdded:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeUpdated:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeMetadataChecked:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
@@ -192,18 +210,15 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            atmId:
-              type: string
-              example: id
-            atmStatus:
-              type: string
-              example: Operating
             countryOfIncorporation:
               type: string
               example: US
             countryOfOperation:
               type: string
               example: US
+            countryOfOperationSource:
+              type: string
+              example: https://source-link.com
             kycNotes:
               type: string
               example: note
@@ -212,7 +227,7 @@ components:
               items:
                 type: string
                 example: Passport
-            location:
+            locationUrl:
               type: string
               example: https://maps.app.goo.gl/oe4QrRpohBPHZZVy8
             operatedBy:
@@ -224,15 +239,24 @@ components:
               items:
                 type: string
                 example: USD
+            isLicensed:
+              type: string
+              enum:
+                - Yes
+                - No
+                - Unknown
+            countryOfLicense:
+              type: string
+              example: US
+            countryOfLicenseSource:
+              type: string
+              example: https://source-link.com
     Crim:
       description: The metadata for a Criminal Enterprise entity
       allOf:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             tags:
               type: array
               items:
@@ -242,7 +266,10 @@ components:
               type: string
             isScam:
               type: string
-              example: Yes
+              enum:
+                - Yes
+                - No
+                - Unknown
             scamSource:
               type: string
               example: https://source-link.com
@@ -252,9 +279,6 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             tags:
               type: array
               items:
@@ -279,9 +303,6 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             tags:
               type: array
               items:
@@ -309,9 +330,6 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             osint:
               type: string
             isScam:
@@ -326,9 +344,6 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             tags:
               type: array
               items:
@@ -360,9 +375,6 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             countryOfIncorporation:
               type: string
               example: US
@@ -380,9 +392,6 @@ components:
         - $ref: '#/components/schemas/Entity'
         - type: object
           properties:
-            operationalStatus:
-              type: string
-              example: Open
             tags:
               type: array
               items:
@@ -422,7 +431,7 @@ components:
           example: btc
         transactionType:
           type: string
-          example: btc
+          example: deposit
         memo:
           type: integer
           format: int64
@@ -434,11 +443,11 @@ components:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
-    SyncEvent:
-      description: The sync event information for entities/traces that have been modified/deleted
+    SyncEntitiesEvent:
+      description: The sync event information for entities that have been modified/deleted
       type: object
       properties:
-        id:
+        entityId:
           type: integer
           format: int64
           example: 10
@@ -457,136 +466,170 @@ components:
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
-  requestBodies:
-    GetEntitiesRequest:
+    SyncTracesEvent:
+      description: The sync event information for traces that have been modified/deleted
+      type: object
+      properties:
+        traceId:
+          type: integer
+          format: int64
+          example: 10
+        eventType:
+          type: string
+          enum:
+            - modify
+            - delete
+        attributeName:
+          type: string
+          example: entityName
+        attributeValue:
+          type: string
+          example: hello
+        dateTimeUpdated:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+    EntitiesRequest:
       description: |-
-        The request is optional and takes in the following parameters to match the returned entities against:
+        The request takes in the following optional parameters to match the returned entities against:
         1. entityIds- List of entityIds
         2. categoryIds- List of categoryIds
         3. entityNameRegex- Regular expression on the entity name
         4. urlRegex- Regular expression on the url
         5. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
         6. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              entityIds:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              categoryIds:
-                type: array
-                items:
-                  type: string
-                  example: cex
-              entityNameRegex:
-                type: string
-                example: hello*
-              urlRegex:
-                type: string
-                example: "*binanc*"
-              dateTimeAddedFrom:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-              dateTimeAddedTo:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-    GetTracesRequest:
+        7. pageToken- Key used to fetch the next page of entities. When empty, the first page is returned. To get the next page of entities, set pageToken value to the nextPageToken returned in the previous response
+        8. pageSize- Specifies the number of entities to be returned in a page. The default is 20
+      type: object
+      properties:
+        entityIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        categoryIds:
+          type: array
+          items:
+            type: string
+            example: cex
+        entityNameRegex:
+          type: string
+          example: hello*
+        urlRegex:
+          type: string
+          example: "*binanc*"
+        dateTimeAddedFrom:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeAddedTo:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          default: 20
+    TracesRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned traces against:
         1. traceIds- List of traceIds
         2. entityIds- List of entityIds
         3. categoryIds- List of categoryIds
         4. tokens- List of digitial tokens/coins (BTC, LTC, XRP, ETH, SOL, ALGO, BNB (BEP20), ADA, DOGE, MATIC, BCH, ZEC, DASH, TRX, EOS, XMR, DOT, FTM, XLM, ATOM)
-        5. transactionTypes- List of transaction types (deposit, withdraw, direct, deposit)
+        5. transactionTypes- List of transaction types (deposit, withdraw, direct, external)
         6. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
         7. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              traceIds:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              entityIds:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              categoryIds:
-                type: array
-                items:
-                  type: string
-                  example: cex
-              tokens:
-                type: array
-                items:
-                  type: string
-                  example: btc
-              transactionTypes:
-                type: array
-                items:
-                  type: string
-                  enum:
-                  - deposit
-                  - withdraw
-                  - direct
-                  - external
-                  example: deposit
-              dateTimeAddedFrom:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-              dateTimeAddedTo:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-    GetEntityScreenshotsRequest:
+        8. pageToken- Key used to fetch the next page of traces. When empty, the first page is returned. To get the next page of traces, set pageToken value to the nextPageToken returned in the previous response
+        9. pageSize- Specifies the number of traces to be returned in a page. The default is 30
+      type: object
+      properties:
+        traceIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        entityIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        categoryIds:
+          type: array
+          items:
+            type: string
+            example: cex
+        tokens:
+          type: array
+          items:
+            type: string
+            example: btc
+        transactionTypes:
+          type: array
+          items:
+            type: string
+            enum:
+            - deposit
+            - withdraw
+            - direct
+            - external
+            example: deposit
+        dateTimeAddedFrom:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeAddedTo:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          default: 30
+    EntityScreenshotsRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned screenshots against:
         1. entityIds- List of entityIds
         2. categoryIds- List of categoryIds
         3. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
         4. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              entityIds:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              categoryIds:
-                type: array
-                items:
-                  type: string
-                  example: cex
-              dateTimeAddedFrom:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-              dateTimeAddedTo:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-    GetTraceScreenshotsRequest:
+        5. pageToken- Key used to fetch the next page of entity screenshots. When empty, the first page is returned. To get the next page of entity screenshots, set pageToken value to the nextPageToken returned in the previous response
+        6. pageSize- Specifies the number of entity screenshots to be returned in a page. The default is 50
+      type: object
+      properties:
+        entityIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        categoryIds:
+          type: array
+          items:
+            type: string
+            example: cex
+        dateTimeAddedFrom:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeAddedTo:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          default: 50
+    TraceScreenshotsRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned screenshots against:
         1. traceIds- List of traceIds
@@ -594,60 +637,146 @@ components:
         3. categoryIds- List of categoryIds
         4. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
         5. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              traceIds:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              entityIds:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              categoryIds:
-                type: array
-                items:
-                  type: string
-                  example: cex
-              dateTimeAddedFrom:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-              dateTimeAddedTo:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-    SyncRequest:
+        6. pageToken- Key used to fetch the next page of trace screenshots. When empty, the first page is returned. To get the next page of trace screenshots, set pageToken value to the nextPageToken returned in the previous response
+        7. pageSize- Specifies the number of trace screenshots to be returned in a page. The default is 50
+      type: object
+      properties:
+        traceIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        entityIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        categoryIds:
+          type: array
+          items:
+            type: string
+            example: cex
+        dateTimeAddedFrom:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeAddedTo:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          default: 50
+    SyncEntitiesRequest:
       description: |-
         The request is optional and takes in the following parameters to match the returned sync events against:
-        1. ids- List of entityIds or traceIds for sync_entities or sync_traces respectively
+        1. entityIds- List of entityIds to find sync events for
         2. dateTimeUpdatedFrom- Starting timestamp for the time range during which the entity was updated
         3. dateTimeUpdatedTo- Ending timestamp for the time range during which the entity was updated
-      required: false
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              ids:
-                type: array
-                items:
-                  type: integer
-                  format: int64
-                  example: 10
-              dateTimeUpdatedFrom:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
-              dateTimeUpdatedTo:
-                type: string
-                format: date-time
-                example: 2017-07-21T17:32:28Z
+        4. pageToken- Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
+        5. pageSize- Specifies the number of sync events to be returned in a page. The default is 50
+      type: object
+      properties:
+        entityIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        dateTimeUpdatedFrom:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeUpdatedTo:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          default: 50
+    SyncTracesRequest:
+      description: |-
+        The request is optional and takes in the following parameters to match the returned sync events against:
+        1. traceIds- List of traceIds to find sync events for
+        2. dateTimeUpdatedFrom- Starting timestamp for the time range during which the trace was updated
+        3. dateTimeUpdatedTo- Ending timestamp for the time range during which the trace was updated
+        4. pageToken- Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
+        5. pageSize- Specifies the number of sync events to be returned in a page. The default is 50
+      type: object
+      properties:
+        traceIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        dateTimeUpdatedFrom:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeUpdatedTo:
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+          default: 50
+    EntitiesResponse:
+      type: object
+      properties:
+        entities:
+          type: array
+          items:
+            anyOf:
+              - $ref: '#/components/schemas/Atm'
+              - $ref: '#/components/schemas/Crim'
+              - $ref: '#/components/schemas/Csam'
+              - $ref: '#/components/schemas/Dnm'
+              - $ref: '#/components/schemas/Fct'
+              - $ref: '#/components/schemas/Gm'
+              - $ref: '#/components/schemas/Psp'
+              - $ref: '#/components/schemas/Vnh'
+        nextPageToken:
+          type: integer
+          format: int64
+    TracesResponse:
+      type: object
+      properties:
+        traces:
+          type: array
+          items:
+            $ref: '#/components/schemas/Trace'
+        nextPageToken:
+          type: integer
+          format: int64
+    SyncEntitiesResponse:
+      type: object
+      properties:
+        syncEntitiesEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncEntitiesEvent'
+        nextPageToken:
+          type: integer
+          format: int64
+    SyncTracesResponse:
+      type: object
+      properties:
+        syncTracesEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncTracesEvent'
+        nextPageToken:
+          type: integer
+          format: int64
