@@ -6,7 +6,7 @@ info:
     
     The Chainlabs API provides an automated way of retrieving traced seed addresses, corresponding metadata, and screenshot proofs to replace the monthly manual CSV deliveries.
     
-    To obtain all the historical as well as newly added entities, traces, and screenshots, use the */entities*, */traces*, */entity_screenshots*, and */trace_screenshots* endpoints. To get modification/deletion events that have taken place on existing data, use the */sync_entities* and */sync_traces* endpoints and modify/delete entities or traces on your local data based on them. 
+    To obtain all the historical as well as newly added entities, traces, and screenshots, use the */entities* and */traces* endpoints. To get modification/deletion events that have taken place on existing data, use the */sync_entities* and */sync_traces* endpoints and modify/delete entities or traces on your local data based on them. 
   version: 0.1.0
 paths:
   /entities:
@@ -55,58 +55,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TracesResponse'
-        '400':
-          description: Invalid request
-        '401':
-          description: Unauthorized error
-        '500':
-          description: Internal server error
-  /entity_screenshots:
-    post:
-      tags:
-        - Screenshots
-      summary: Get entity screenshots filtered by entityIds, categoryIds, dateTimeAddedFrom, dateTimeAddedTo
-      description: Returns a .zip containing the screenshot proofs for the entities that match the criteria provided in the request. All screenshots are returned if the request is empty.
-      operationId: entityScreenshots
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EntityScreenshotsRequest'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/zip:
-              schema:
-                type: object
-        '400':
-          description: Invalid request
-        '401':
-          description: Unauthorized error
-        '500':
-          description: Internal server error
-  /trace_screenshots:
-    post:
-      tags:
-        - Screenshots
-      summary: Get trace screenshots filtered by traceIds, entityIds, categoryIds, dateTimeAddedFrom, dateTimeAddedTo
-      description: Returns a .zip containing the screenshot proofs for the traces that match the criteria provided in the request. All screenshots are returned if the request is empty.
-      operationId: traceScreenshots
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TraceScreenshotsRequest'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/zip:
-              schema:
-                type: object
         '400':
           description: Invalid request
         '401':
@@ -168,40 +116,38 @@ paths:
 components:
   schemas:
     Entity:
-      description: The entity object contains all the metadata for an entity
+      description: The entity object contains all the metadata for an entity.
       type: object
       properties:
         entityId:
+          description: Unique integer assigned to each entity.
           type: integer
           format: int64
           example: 10
         name:
+          description: The official or recognized name used to identify the entity. This name is used in all references, documentation, and records related to the entity.
           type: string
           example: Binance
         categoryId:
+           $ref: '#/components/schemas/CategoryIdEnum'
+        url:
           type: string
-          example: cex
-        urls:
-          type: array
-          items:
-            type: string
-            example: https://binance.com
+          example: https://binance.com
         operationalStatus:
-              type: string
-              enum:
-                - Open
-                - Closed
-                - Updating
+          $ref: '#/components/schemas/OperationalStatusEnum'
         dateTimeAdded:
           type: string
+          description: Date and time when the entity was added to the database.
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeUpdated:
           type: string
+          description: Date and time when the entity was last updated.
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeMetadataChecked:
           type: string
+          description: Date and time when the metadata was last checked.
           format: date-time
           example: 2017-07-21T17:32:28Z
     Atm:
@@ -211,44 +157,40 @@ components:
         - type: object
           properties:
             countryOfIncorporation:
+              description: Specifies the country where the entity is legally registered and incorporated. This information is used to identify the jurisdiction governing the entity’s legal status and operations.
               type: string
               example: US
-            countryOfOperation:
-              type: string
-              example: US
-            countryOfOperationSource:
+            countryOfIncorporationSourceLink:
+              description: Provides the URL or link to the source that verifies the country of incorporation for the entity. This link serves as a reference for the information provided.
               type: string
               example: https://source-link.com
             kycNotes:
+              description: Ade provides this
               type: string
               example: note
             kycVerification:
-              type: array
-              items:
-                type: string
-                example: Passport
+              $ref: '#/components/schemas/KycVerification'
             locationUrl:
               type: string
+              description: Specifies the physical address or geographical coordinates where the ATM is installed.
               example: https://maps.app.goo.gl/oe4QrRpohBPHZZVy8
             operatedBy:
+              description: Identifies the organization, company, or individual responsible for managing and maintaining the ATM.
               type: string
+              example: Localcoin
             osint:
+              description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
               type: string
             supportedFiat:
-              type: array
-              items:
-                type: string
-                example: USD
+              $ref: '#/components/schemas/SupportedFiats'
             isLicensed:
-              type: string
-              enum:
-                - Yes
-                - No
-                - Unknown
+              $ref: '#/components/schemas/IsLicensedEnum'
             countryOfLicense:
+              description: Specifies the country in which the entity has obtained its operating license. This identifies the jurisdiction that governs the entity’s licensed activities.
               type: string
               example: US
-            countryOfLicenseSource:
+            countryOfLicenseSourceLink:
+              description: Provides the URL or link to the source that confirms the country where the entity’s license was issued. This link serves as a reference for verification purposes.
               type: string
               example: https://source-link.com
     Crim:
@@ -258,154 +200,24 @@ components:
         - type: object
           properties:
             tags:
+              description: Classifies the type or category of content associated with an entity, typically used for tagging or categorizing content related to criminal activities or disturbing material
               type: array
               items:
                 type: string
-                example: Violent Crimes
+                enum:
+                  - Violent Crimes
+                  - Exploitative and Coercive Crimes
+                  - Property and Financial Crimes
+                  - Substance Related Crimes
+                  - Morbid and Shock Content
+                  - Psychological and Emotional Crimes
             osint:
+              description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
               type: string
             isScam:
-              type: string
-              enum:
-                - Yes
-                - No
-                - Unknown
+              $ref: '#/components/schemas/IsScamEnum'
             scamSource:
-              type: string
-              example: https://source-link.com
-    Csam:
-      description: The metadata for a CSAM entity
-      allOf:
-        - $ref: '#/components/schemas/Entity'
-        - type: object
-          properties:
-            tags:
-              type: array
-              items:
-                type: string
-                example: Darkweb
-            mediaTypes:
-              type: array
-              items:
-                type: string
-                example: Videos
-            osint:
-              type: string
-            isScam:
-              type: string
-              example: Yes
-            scamSource:
-              type: string
-              example: https://source-link.com
-    Dnm:
-      description: The metadata for a Darknet Market entity
-      allOf:
-        - $ref: '#/components/schemas/Entity'
-        - type: object
-          properties:
-            tags:
-              type: array
-              items:
-                type: string
-                example: Darkweb
-            marketRules:
-              type: string
-              example: rules
-            osint:
-              type: string
-            productsAndServices:
-              type: array
-              items:
-                type: string
-                example: Drugs
-            isScam:
-              type: string
-              example: Yes
-            scamSource:
-              type: string
-              example: https://source-link.com
-    Fct:
-      description: The metadata for a Faucet entity
-      allOf:
-        - $ref: '#/components/schemas/Entity'
-        - type: object
-          properties:
-            osint:
-              type: string
-            isScam:
-              type: string
-              example: Yes
-            scamSource:
-              type: string
-              example: https://source-link.com
-    Gm:
-      description: The metadata for a Gambling entity
-      allOf:
-        - $ref: '#/components/schemas/Entity'
-        - type: object
-          properties:
-            tags:
-              type: array
-              items:
-                type: string
-                example: Centralized
-            countryOfIncorporation:
-              type: string
-              example: US
-            kycInputDate:
-              type: string
-              format: date
-              example: 2017-07-21
-            kycVerification:
-              type: array
-              items:
-                type: string
-                example: Passport
-            osint:
-              type: string
-            isScam:
-              type: string
-              example: Yes
-            scamSource:
-              type: string
-              example: https://source-link.com
-    Psp:
-      description: The metadata for a Payment Service Provider entity
-      allOf:
-        - $ref: '#/components/schemas/Entity'
-        - type: object
-          properties:
-            countryOfIncorporation:
-              type: string
-              example: US
-            osint:
-              type: string
-            isScam:
-              type: string
-              example: Yes
-            scamSource:
-              type: string
-              example: https://source-link.com
-    Vnh:
-      description: The metadata for a VPN and Hosting entity
-      allOf:
-        - $ref: '#/components/schemas/Entity'
-        - type: object
-          properties:
-            tags:
-              type: array
-              items:
-                type: string
-                example: Clearnet
-            countryOfIncorporation:
-              type: string
-              example: US
-            osint:
-              type: string
-            isScam:
-              type: string
-              example: Yes
-            scamSource:
+              description: Identifies the origin or source from which the scam information about the entity was obtained. This could include reports, databases, user submissions, or other investigative sources.
               type: string
               example: https://source-link.com
     Trace:
@@ -413,33 +225,53 @@ components:
       type: object
       properties:
         traceId:
+          description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
           type: integer
           format: int64
           example: 10
         entityId:
+          description: Unique integer assigned to each entity.
           type: integer
           format: int64
           example: 10
         categoryId:
-          type: string
-          example: cex
+         $ref: '#/components/schemas/CategoryIdEnum'
         address:
           type: string
+          description: A blockchain address linked to the entity
           example: 34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo
         token:
+          $ref: '#/components/schemas/TokenEnum'
+        transactionId:
+          description: A unique cryptographic string generated for a blockchain transaction, used to verify and track the transaction on the blockchain ledger.
           type: string
-          example: btc
+          example: 74fb65a24350ef3b9380e8232e734416224cd6a2f12cacb66eee9e176b9e337c
         transactionType:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        psp:
+          description: Indicates whether the blockchain address was generated through a Payment Service Provider (PSP) infrastructure used by the entity for processing transactions.
           type: string
-          example: deposit
+          example: CryptoPay
         memo:
+          description: A short, optional message or note attached to a transaction or address for additional context or clarification. This is often used for internal reference or to provide specific transaction details.
           type: integer
           format: int64
           example: 10
+        proofLink:
+          description: A URL linking to a screenshot that serves as evidence of the blockchain address generated during an interaction with the entity.
+          type: string
+          example: https://www.link-to-screenshot.com
         notes:
+          description: Comments or information provided related to the address.
           type: string
           example: hello
+        dateTimeUpdated:
+          description: Date and time when the trace was updated last time.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
         dateTimeAdded:
+          description: Date and time when the trace was added to the database.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
@@ -448,21 +280,22 @@ components:
       type: object
       properties:
         entityId:
+          description: Unique integer assigned to each entity.
           type: integer
           format: int64
           example: 10
         eventType:
-          type: string
-          enum:
-            - modify
-            - delete
+          $ref: '#/components/schemas/EventTypeEnum'
         attributeName:
+          description: Specifies the name of the column that was updated.
           type: string
           example: entityName
         attributeValue:
+          description: Specifies the new value in the column that was updated.
           type: string
           example: hello
         dateTimeUpdated:
+          description: Date and time when the value was updated.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
@@ -471,265 +304,158 @@ components:
       type: object
       properties:
         traceId:
+          description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
           type: integer
           format: int64
           example: 10
         eventType:
-          type: string
-          enum:
-            - modify
-            - delete
+          $ref: '#/components/schemas/EventTypeEnum'
         attributeName:
+          description: Specifies the name of the column that was updated.
           type: string
           example: entityName
         attributeValue:
+          description: Specifies the new value in the column that was updated.
           type: string
           example: hello
         dateTimeUpdated:
+          description: Date and time when the value was updated.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
     EntitiesRequest:
-      description: |-
-        The request takes in the following optional parameters to match the returned entities against:
-        1. entityIds- List of entityIds
-        2. categoryIds- List of categoryIds
-        3. entityNameRegex- Regular expression on the entity name
-        4. urlRegex- Regular expression on the url
-        5. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
-        6. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-        7. pageToken- Key used to fetch the next page of entities. When empty, the first page is returned. To get the next page of entities, set pageToken value to the nextPageToken returned in the previous response
-        8. pageSize- Specifies the number of entities to be returned in a page. The default is 20
       type: object
       properties:
         entityIds:
+          description: List of entityIds
           type: array
           items:
             type: integer
             format: int64
             example: 10
         categoryIds:
-          type: array
-          items:
-            type: string
-            example: cex
+          $ref: '#/components/schemas/CategoryIds'
         entityNameRegex:
+          description: Regular expression on the entity name.
           type: string
           example: hello*
         urlRegex:
+          description: expression on the url.
           type: string
           example: "*binanc*"
         dateTimeAddedFrom:
+          description: Starting timestamp for the time range during which the entity was made available
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeAddedTo:
+          description: Ending timestamp for the time range during which the entity was made available
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
+          description: Key used to fetch the next page of entities. When empty, the first page is returned. To get the next page of entities, set pageToken value to the nextPageToken returned in the previous response
           type: integer
           format: int64
         pageSize:
+          description: Specifies the number of entities to be returned in a page. The default is 20
           type: integer
           default: 20
     TracesRequest:
-      description: |-
-        The request is optional and takes in the following parameters to match the returned traces against:
-        1. traceIds- List of traceIds
-        2. entityIds- List of entityIds
-        3. categoryIds- List of categoryIds
-        4. tokens- List of digitial tokens/coins (BTC, LTC, XRP, ETH, SOL, ALGO, BNB (BEP20), ADA, DOGE, MATIC, BCH, ZEC, DASH, TRX, EOS, XMR, DOT, FTM, XLM, ATOM)
-        5. transactionTypes- List of transaction types (deposit, withdraw, direct, external)
-        6. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
-        7. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-        8. pageToken- Key used to fetch the next page of traces. When empty, the first page is returned. To get the next page of traces, set pageToken value to the nextPageToken returned in the previous response
-        9. pageSize- Specifies the number of traces to be returned in a page. The default is 30
       type: object
       properties:
         traceIds:
+          description: List of traceIds
           type: array
           items:
             type: integer
             format: int64
             example: 10
         entityIds:
+          description: List of entityIds
           type: array
           items:
             type: integer
             format: int64
             example: 10
         categoryIds:
-          type: array
-          items:
-            type: string
-            example: cex
+          $ref: '#/components/schemas/CategoryIds'
         tokens:
-          type: array
-          items:
-            type: string
-            example: btc
+          $ref: '#/components/schemas/Tokens'
         transactionTypes:
-          type: array
-          items:
-            type: string
-            enum:
-            - deposit
-            - withdraw
-            - direct
-            - external
-            example: deposit
+           $ref: '#/components/schemas/TransactionTypes'
         dateTimeAddedFrom:
+          description: Starting timestamp for the time range during which the entity was made available
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeAddedTo:
+          description: Ending timestamp for the time range during which the entity was made available
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
+          description: Key used to fetch the next page of traces. When empty, the first page is returned. To get the next page of traces, set pageToken value to the nextPageToken returned in the previous response
           type: integer
           format: int64
         pageSize:
+          description: Specifies the number of traces to be returned in a page. The default is 30
           type: integer
           default: 30
-    EntityScreenshotsRequest:
-      description: |-
-        The request is optional and takes in the following parameters to match the returned screenshots against:
-        1. entityIds- List of entityIds
-        2. categoryIds- List of categoryIds
-        3. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
-        4. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-        5. pageToken- Key used to fetch the next page of entity screenshots. When empty, the first page is returned. To get the next page of entity screenshots, set pageToken value to the nextPageToken returned in the previous response
-        6. pageSize- Specifies the number of entity screenshots to be returned in a page. The default is 50
-      type: object
-      properties:
-        entityIds:
-          type: array
-          items:
-            type: integer
-            format: int64
-            example: 10
-        categoryIds:
-          type: array
-          items:
-            type: string
-            example: cex
-        dateTimeAddedFrom:
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-        dateTimeAddedTo:
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-        pageToken:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          default: 50
-    TraceScreenshotsRequest:
-      description: |-
-        The request is optional and takes in the following parameters to match the returned screenshots against:
-        1. traceIds- List of traceIds
-        2. entityIds- List of entityIds
-        3. categoryIds- List of categoryIds
-        4. dateTimeAddedFrom- Starting timestamp for the time range during which the entity was made available
-        5. dateTimeAddedTo- Ending timestamp for the time range during which the entity was made available
-        6. pageToken- Key used to fetch the next page of trace screenshots. When empty, the first page is returned. To get the next page of trace screenshots, set pageToken value to the nextPageToken returned in the previous response
-        7. pageSize- Specifies the number of trace screenshots to be returned in a page. The default is 50
-      type: object
-      properties:
-        traceIds:
-          type: array
-          items:
-            type: integer
-            format: int64
-            example: 10
-        entityIds:
-          type: array
-          items:
-            type: integer
-            format: int64
-            example: 10
-        categoryIds:
-          type: array
-          items:
-            type: string
-            example: cex
-        dateTimeAddedFrom:
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-        dateTimeAddedTo:
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-        pageToken:
-          type: integer
-          format: int64
-        pageSize:
-          type: integer
-          default: 50
     SyncEntitiesRequest:
-      description: |-
-        The request is optional and takes in the following parameters to match the returned sync events against:
-        1. entityIds- List of entityIds to find sync events for
-        2. dateTimeUpdatedFrom- Starting timestamp for the time range during which the entity was updated
-        3. dateTimeUpdatedTo- Ending timestamp for the time range during which the entity was updated
-        4. pageToken- Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
-        5. pageSize- Specifies the number of sync events to be returned in a page. The default is 50
       type: object
       properties:
         entityIds:
+          description: List of entityIds to find sync events for.
           type: array
           items:
             type: integer
             format: int64
             example: 10
         dateTimeUpdatedFrom:
+          description: Starting timestamp for the time range during which the entity was updated.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeUpdatedTo:
+          description: Ending timestamp for the time range during which the entity was updated.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
           type: integer
           format: int64
         pageSize:
+          description: Specifies the number of sync events to be returned in a page. The default is 50.
           type: integer
           default: 50
     SyncTracesRequest:
-      description: |-
-        The request is optional and takes in the following parameters to match the returned sync events against:
-        1. traceIds- List of traceIds to find sync events for
-        2. dateTimeUpdatedFrom- Starting timestamp for the time range during which the trace was updated
-        3. dateTimeUpdatedTo- Ending timestamp for the time range during which the trace was updated
-        4. pageToken- Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
-        5. pageSize- Specifies the number of sync events to be returned in a page. The default is 50
       type: object
       properties:
         traceIds:
+          description: List of traceIds to find sync events for.
           type: array
           items:
             type: integer
             format: int64
             example: 10
-        dateTimeUpdatedFrom:
+        dateTimeUpdatedFrom: 
+          description: Starting timestamp for the time range during which the trace was updated.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         dateTimeUpdatedTo:
+          description: Ending timestamp for the time range during which the trace was updated.
           type: string
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
           type: integer
           format: int64
         pageSize:
+          description: Specifies the number of sync events to be returned in a page. The default is 50
           type: integer
           default: 50
     EntitiesResponse:
@@ -741,12 +467,6 @@ components:
             anyOf:
               - $ref: '#/components/schemas/Atm'
               - $ref: '#/components/schemas/Crim'
-              - $ref: '#/components/schemas/Csam'
-              - $ref: '#/components/schemas/Dnm'
-              - $ref: '#/components/schemas/Fct'
-              - $ref: '#/components/schemas/Gm'
-              - $ref: '#/components/schemas/Psp'
-              - $ref: '#/components/schemas/Vnh'
         nextPageToken:
           type: integer
           format: int64
@@ -780,3 +500,151 @@ components:
         nextPageToken:
           type: integer
           format: int64
+    TransactionTypeEnum:
+      type: string
+      description:  Indicates the nature of the transaction performed, providing context for how funds or assets were handled.
+      oneOf:
+      - title: Deposit
+        description:  Funds were added to the wallet through a transfer from another source, marking an inflow of assets to the entity’s wallet (screenshot proof available).
+      - title: Withdraw
+        description: Funds were removed from the wallet through a transfer to another destination, marking an outflow of assets from the entity’s wallet (screenshot proof available).
+      - title: Direct
+        description:  No deposit or withdrawal was necessary, as the wallet was already connected to an active cluster (screenshot proof available).
+      - title: External
+        description: Data was collected or observed from external sources without direct interaction with the wallet. This typically refers to information gathered from scrapped data (screenshot proof unavailable).
+      - title: Private
+        description: The is used to represent private enhancing tokens like Monero (screenshot proof available).
+    TransactionTypes:
+      type: array
+      items:
+        $ref: '#/components/schemas/TransactionTypeEnum'
+    CategoryIdEnum:
+      type: string
+      oneOf:
+      - title: CRIM
+        description: Criminal Enterprises category encompasses a broad spectrum of illicit activities conducted with the intention to gain profit or achieve some unlawful objectives. They are often organized and executed within the framework of larger criminal operations or networks.
+      - title: ATM
+        description: Cryptoasset ATMs also known as Automated Teller Machines, are self-service kiosks enabling individuals to buy or sell Bitcoin and other cryptocurrencies using cash or debit cards
+    CategoryIds:
+      description: List of categoryIds.
+      type: array
+      items:
+        type: string
+        example:
+          - CRIM
+          - ATM
+          
+    KycVerification:
+      type: array
+      description: Lists the types of documents or information that have been used to verify the identity of the entity or individual as part of the Know Your Customer (KYC) process.
+      items:
+        type: string
+        enum:
+          - ID
+          - Passport
+          - Utility Bill
+          - Driving License
+          - Selfie
+          - Phone Number
+    
+    OperationalStatusEnum:
+      type: string
+      description: Indicates the current availability and functionality of a website. This status reflects whether the website is accessible to users, temporarily unavailable, or undergoing updates
+      oneOf:
+      - title: Open
+        description: The website is fully operational and accessible to users.
+      - title: Closed
+        description: The website is not currently available or operational.
+      - title: Updating
+        description: The website is undergoing maintenance or updates, and may have limited or no accessibility during this period.
+    OperationalStatusItem:
+      # type: object
+      # properties:
+      #   status:
+      type: string
+      enum:
+        - Open
+        - Closed
+        - Updating
+      description: |
+        - **Open**: The entity is currently operational and functioning.
+        - **Closed**: The entity is currently closed and not operational.
+        - **Updating**: The entity is currently undergoing updates or maintenance.
+      example:
+        status: Open
+    IsLicensedEnum:
+      type: string
+      description: Indicates whether the entity holds a valid license to operate within its respective jurisdiction. This status helps determine the entity’s regulatory compliance.
+      oneOf:
+      - title: Yes
+      - title: No
+      - title: Unknown
+    IsScamEnum:
+      type: array
+      description: Indicates whether the entity is identified or suspected as a scam. This status helps classify the entity based on its legitimacy.
+      items:
+        type: string
+        enum:
+          - Yes
+          - No
+          - Unknown
+    TokenEnum:
+      type: string
+      description: A specific cryptocurrency or token that has been tracked through a blockchain tracing process, linked to the entity’s activities.
+      oneOf:
+      - title: BTC
+      - title: BCH
+      - title: LTC
+      - title: ETH
+      - title: DASH
+      - title: TRX
+      - title: ZEC
+      - title: DOGE
+      - title: XRP
+      - title: SOL
+      - title: EOS
+      - title: ADA
+      - title: ALGO
+      - title: MATIC
+      - title: BNB
+      - title: XMR
+      - title: DOT
+      - title: FTM
+      - title: XLM
+      - title: ATOM
+    Tokens:
+      type: array
+      items:
+        $ref: '#/components/schemas/TokenEnum'
+    SupportedFiats:
+      type: array
+      description: Lists the fiat currencies that are supported or accepted by the entity.
+      items:
+        type: string
+        enum:
+          - CHF
+          - TWD
+          - ZAR
+          - GBP
+          - USD
+          - RUB
+          - HKD
+          - CNY
+          - INR
+          - SGD
+          - EUR
+          - BRL
+          - NZD
+          - MXN
+          - TRY
+          - SEK
+          - CAD
+          - JPY
+          - AED
+          - KRW
+          - AUD
+    EventTypeEnum:
+      type: string
+      oneOf:
+      - title: MODIFY
+      - title: DELETE
