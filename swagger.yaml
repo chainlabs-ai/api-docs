@@ -165,7 +165,7 @@ components:
               type: string
               example: https://source-link.com
             kycNotes:
-              description: Notes
+              description: Additional information or observations related to the Know Your Customer (KYC) verification process for the entity. This may include specific details about the verification, exceptions, or any issues encountered.
               type: string
               example: note
             kycVerification:
