@@ -165,7 +165,7 @@ components:
               type: string
               example: https://source-link.com
             kycNotes:
-              description: Ade provides this
+              description: Notes
               type: string
               example: note
             kycVerification:
@@ -182,7 +182,10 @@ components:
               description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
               type: string
             supportedFiat:
-              $ref: '#/components/schemas/SupportedFiats'
+              description: List of supportedFiat.
+              type: array
+              items:
+                $ref: '#/components/schemas/SupportedFiatEnum'
             isLicensed:
               $ref: '#/components/schemas/IsLicensedEnum'
             countryOfLicense:
@@ -334,7 +337,10 @@ components:
             format: int64
             example: 10
         categoryIds:
-          $ref: '#/components/schemas/CategoryIds'
+          description: List of categoryIds.
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryIdEnum'
         entityNameRegex:
           description: Regular expression on the entity name.
           type: string
@@ -354,7 +360,7 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of entities. When empty, the first page is returned. To get the next page of entities, set pageToken value to the nextPageToken returned in the previous response
+          description: Key used to fetch the next page of entities. When empty, the first page is returned.
           type: integer
           format: int64
         pageSize:
@@ -379,11 +385,20 @@ components:
             format: int64
             example: 10
         categoryIds:
-          $ref: '#/components/schemas/CategoryIds'
+          description: List of categoryIds.
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryIdEnum'
         tokens:
-          $ref: '#/components/schemas/Tokens'
+          description: List of tokens.
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenEnum'
         transactionTypes:
-           $ref: '#/components/schemas/TransactionTypes'
+          description: List of transactionTypes.
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionTypeEnum'
         dateTimeAddedFrom:
           description: Starting timestamp for the time range during which the entity was made available
           type: string
@@ -395,7 +410,7 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of traces. When empty, the first page is returned. To get the next page of traces, set pageToken value to the nextPageToken returned in the previous response
+          description: Key used to fetch the next page of traces. When empty, the first page is returned.
           type: integer
           format: int64
         pageSize:
@@ -423,7 +438,7 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned.
           type: integer
           format: int64
         pageSize:
@@ -451,7 +466,7 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of sync events. When empty, the first page is returned. To get the next page of sync events, set pageToken value to the nextPageToken returned in the previous response
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned.
           type: integer
           format: int64
         pageSize:
@@ -468,6 +483,7 @@ components:
               - $ref: '#/components/schemas/Atm'
               - $ref: '#/components/schemas/Crim'
         nextPageToken:
+          description: To get the next page of entities, set pageToken value to the nextPageToken returned in the response.
           type: integer
           format: int64
     TracesResponse:
@@ -478,6 +494,7 @@ components:
           items:
             $ref: '#/components/schemas/Trace'
         nextPageToken:
+          description: To get the next page of traces, set pageToken value to the nextPageToken returned in the response.
           type: integer
           format: int64
     SyncEntitiesResponse:
@@ -488,6 +505,7 @@ components:
           items:
             $ref: '#/components/schemas/SyncEntitiesEvent'
         nextPageToken:
+          description: To get the next page of sync events, set pageToken value to the nextPageToken returned in the response.
           type: integer
           format: int64
     SyncTracesResponse:
@@ -498,6 +516,7 @@ components:
           items:
             $ref: '#/components/schemas/SyncTracesEvent'
         nextPageToken:
+          description: To get the next page of sync events, set pageToken value to the nextPageToken returned in the response.
           type: integer
           format: int64
     TransactionTypeEnum:
@@ -514,10 +533,6 @@ components:
         description: Data was collected or observed from external sources without direct interaction with the wallet. This typically refers to information gathered from scrapped data (screenshot proof unavailable).
       - title: Private
         description: The is used to represent private enhancing tokens like Monero (screenshot proof available).
-    TransactionTypes:
-      type: array
-      items:
-        $ref: '#/components/schemas/TransactionTypeEnum'
     CategoryIdEnum:
       type: string
       oneOf:
@@ -525,15 +540,6 @@ components:
         description: Criminal Enterprises category encompasses a broad spectrum of illicit activities conducted with the intention to gain profit or achieve some unlawful objectives. They are often organized and executed within the framework of larger criminal operations or networks.
       - title: ATM
         description: Cryptoasset ATMs also known as Automated Teller Machines, are self-service kiosks enabling individuals to buy or sell Bitcoin and other cryptocurrencies using cash or debit cards
-    CategoryIds:
-      description: List of categoryIds.
-      type: array
-      items:
-        type: string
-        example:
-          - CRIM
-          - ATM
-          
     KycVerification:
       type: array
       description: Lists the types of documents or information that have been used to verify the identity of the entity or individual as part of the Know Your Customer (KYC) process.
@@ -546,10 +552,9 @@ components:
           - Driving License
           - Selfie
           - Phone Number
-    
     OperationalStatusEnum:
       type: string
-      description: Indicates the current availability and functionality of a website. This status reflects whether the website is accessible to users, temporarily unavailable, or undergoing updates
+      description: Indicates the current availability and functionality of a website. This status reflects whether the website is accessible to users, temporarily unavailable, or undergoing updates.
       oneOf:
       - title: Open
         description: The website is fully operational and accessible to users.
@@ -557,21 +562,6 @@ components:
         description: The website is not currently available or operational.
       - title: Updating
         description: The website is undergoing maintenance or updates, and may have limited or no accessibility during this period.
-    OperationalStatusItem:
-      # type: object
-      # properties:
-      #   status:
-      type: string
-      enum:
-        - Open
-        - Closed
-        - Updating
-      description: |
-        - **Open**: The entity is currently operational and functioning.
-        - **Closed**: The entity is currently closed and not operational.
-        - **Updating**: The entity is currently undergoing updates or maintenance.
-      example:
-        status: Open
     IsLicensedEnum:
       type: string
       description: Indicates whether the entity holds a valid license to operate within its respective jurisdiction. This status helps determine the entity’s regulatory compliance.
@@ -587,7 +577,6 @@ components:
         enum:
           - Yes
           - No
-          - Unknown
     TokenEnum:
       type: string
       description: A specific cryptocurrency or token that has been tracked through a blockchain tracing process, linked to the entity’s activities.
@@ -612,37 +601,31 @@ components:
       - title: FTM
       - title: XLM
       - title: ATOM
-    Tokens:
-      type: array
-      items:
-        $ref: '#/components/schemas/TokenEnum'
-    SupportedFiats:
-      type: array
-      description: Lists the fiat currencies that are supported or accepted by the entity.
-      items:
-        type: string
-        enum:
-          - CHF
-          - TWD
-          - ZAR
-          - GBP
-          - USD
-          - RUB
-          - HKD
-          - CNY
-          - INR
-          - SGD
-          - EUR
-          - BRL
-          - NZD
-          - MXN
-          - TRY
-          - SEK
-          - CAD
-          - JPY
-          - AED
-          - KRW
-          - AUD
+    SupportedFiatEnum:
+      description: Fiat currencies that are supported or accepted by the entity.
+      type: string
+      oneOf:
+        - title: CHF
+        - title: TWD
+        - title: ZAR
+        - title: GBP
+        - title: USD
+        - title: RUB
+        - title: HKD
+        - title: CNY
+        - title: INR
+        - title: SGD
+        - title: EUR
+        - title: BRL
+        - title: NZD
+        - title: MXN
+        - title: TRY
+        - title: SEK
+        - title: CAD
+        - title: JPY
+        - title: AED
+        - title: KRW
+        - title: AUD
     EventTypeEnum:
       type: string
       oneOf:
