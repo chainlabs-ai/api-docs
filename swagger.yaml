@@ -485,7 +485,7 @@ components:
                 - XHS
                 - YouTube
             contactInfo:
-              description: "The entity's contact identifier: a handle, phone number, or URL."
+              description: The entity's contact identifier, such as a handle, phone number, or URL.
               type: string
             supportedFiat:
               description: Fiat currencies supported by the entity.
