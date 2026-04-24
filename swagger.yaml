@@ -606,77 +606,32 @@ components:
               items:
                 type: string
                 oneOf:
-                - title: Exit Scam
-                  description: Exit Scam refers to a situation where the operators of a cryptocurrency project or platform abruptly terminate operations and abscond with the investors' funds, leaving participants with substantial losses.
+                - title: Investment Fraud
+                  description: Victim believes they are investing in a legitimate opportunity or strategy expecting profits or yield, but funds are stolen or payouts never materialize.
                   
-                - title: Rug Pull
-                  description: RugPull refers to a fraudulent scheme in which the developers of a cryptocurrency project suddenly withdraw all their liquidity or assets from the project, causing the value of the project's token to plummet and leaving investors with worthless assets.
+                - title: Platform Fraud
+                  description: Victim believes they are using a legitimate platform (exchange, broker, wallet, or dApp), but the platform is fake or manipulated to steal deposits.
                   
-                - title: ICO Scam
-                  description: ICO Scam refers to a fraudulent Initial Coin Offering where organizers collect funds from investors under false pretenses and then fail to execute the promised project
+                - title: Impersonation Fraud
+                  description: Victim believes they are interacting with a trusted entity or individual (company, authority, support agent, employer), which is falsely impersonated.
                   
-                - title: Fraudulent Trading Platforms
-                  description: Fraudulent Trading Platforms refers to deceptive online services that claim to offer legitimate trading but manipulate outcomes or steal users' investments.
+                - title: Romance Fraud
+                  description: Victim believes they are in a genuine personal or romantic relationship, and emotional manipulation is used to induce payments or transfers.
                   
-                - title: Investment Scams
-                  description: Investment scams refers to a scheme that deceives individuals into investing under false promises of high returns, only to misappropriate the funds.
+                - title: Advance Fee Fraud
+                  description: Victim believes paying an upfront fee will unlock a reward, prize, withdrawal, doubling, or other promised benefit that never arrives.
                   
-                - title: Ponzi Scheme
-                  description: Ponzi scheme refers to a fraudulent investing scam promising high returns with little risk by paying earlier investors with the new investors' money.
+                - title: Extortion
+                  description: Victim believes they must pay to avoid harm, exposure, loss of funds, or to recover assets, often under threats or coercive pressure.
                   
-                - title: Fake Job Listings
-                  description: Fake job listing refers to a fraudulent advertisement for a non-existent job, designed to collect personal information or money from unsuspecting applicants.
+                - title: Account Takeover Fraud
+                  description: Victim believes their real account was compromised or hijacked, and losses result from unauthorized access or control.
                   
-                - title: Blackmail Scams
-                  description: Blackmail scams refers to a scheme where scammers threaten to reveal sensitive information about an individual unless they receive payment or other demands.
+                - title: Unknown
+                  description: Insufficient information to confidently assign a primary scam subtag.
                   
-                - title: Airdrop Scam
-                  description: Airdrop scam refers to phishing attacks using fake websites, emails, and social media accounts to trick users into claiming a fake airdrop. This usually entails convincing users into connecting their wallets to malicious smart contracts or sharing their private keys in order to claim the 'airdrop', after which the wallet is drained of all its holdings.  
-                  
-                - title: Cloud Mining
-                  description: Cloud mining refers to a scheme where fraudulent services offer non-existent or unprofitable cryptocurrency mining contracts, deceiving investors out of their funds without delivering promised returns.  
-                  
-                - title: Giveaway Scams
-                  description: Giveaway scams refers to a fraudulent scheme where perpetrators promise free rewards or money in return for a small payment or personal information, but fail to deliver the promised giveaways.   
-                  
-                - title: Impersonation Scam
-                  description: Impersonation scam refers to a deceptive tactic where fraudsters pretend to be someone else, often a trusted individual or entity, to trick victims into sending money or revealing personal information.
-                  
-                - title: Deceptive Smart Contracts Or Wallet Drainer
-                  description: Deceptive Smart Contracts / Wallet Drainer refers to a scheme where fraudulent contracts or applications are designed to illicitly transfer or drain assets from a user's cryptocurrency wallet without their consent.
-                  
-                - title: Business Email Compromise
-                  description: Business Email Compromise refers to a sophisticated fraud where attackers impersonate company executives or vendors via email to deceive employees into transferring funds or revealing sensitive information.
-                  
-                - title: Market Manipulation
-                  description: Market Manipulation refers to deliberate actions taken to artificially influence the price or volume of cryptocurrency assets to mislead investors and profit from the manipulated market conditions.
-
-                - title: Advance Fee Scam
-                  description: Advance Fee Scam refers to a scheme where fraudsters solicit payments or fees from victims promising significant returns or services, only to abscond with the fees without delivering the promised outcomes.
-
-                - title: Affinity Scam
-                  description: Affinity Scam refers to a fraudulent scheme where perpetrators exploit the trust and relationships within a group, such as a community or organization, to deceive members into participating in scams or investments.
-
-                - title: Asset Recovery Scam
-                  description: Asset Recovery Scam refers to a deceptive practice where fraudsters claim they can recover lost or stolen assets for a fee, only to take the payment without providing any recovery services.
-
-                - title: Bait And Switch Scam
-                  description: Bait and Switch Scam refers to a deceptive tactic where an appealing offer is advertised to lure customers, only to have them redirected to a less favorable or more expensive product or service.   
-
-                - title: High Yield Investment Program
-                  description: High Yield Investment Program refers to a Ponzi scheme that promises unsustainably high returns on investments, typically paying earlier investors with the capital from new investors, until it inevitably collapses.
-
-                - title: Liquidity Mining Scam
-                  description: Liquidity Mining Scam refers to a fraudulent scheme where participants are enticed to deposit cryptocurrencies into a pool with the promise of high returns, only for the organizers to drain the pool and disappear with the assets.
-
-                - title: Livestream Scams
-                  description: Livestream Scams refers to a fraudulent scheme where perpetrators broadcast fake live events or endorsements to trick viewers into sending cryptocurrency with the promise of receiving more in return, which never materializes.
-                  
-                - title: Tech Support Scam
-                  description: Tech Support Scam refers to a fraudulent practice where scammers pose as tech support agents to deceive individuals into believing their computer is compromised and extort money for unnecessary repair services.
-                  
-                - title: Romance Or Pig Butchering
-                  description: Romance / Pig Butchering refers to a deceptive scheme where fraudsters build romantic relationships online to manipulate victims into sending money or investing in fraudulent ventures.             
+                - title: Unclassifiable
+                  description: No report, narrative, or usable data exists to determine victim belief or scam mechanics.             
                   
                   
     PSP:
