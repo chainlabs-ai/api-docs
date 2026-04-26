@@ -251,9 +251,6 @@ components:
                 - title: Global Exchange
                   description: A global exchange is a platform that operates without country-specific KYC policies, allowing individuals from various countries to register and engage in buying or selling cryptocurrencies.
                   
-                - title: Regional Exchange
-                  description: A Regional Exchange is a platform restricted by country or region-specific KYC policies, available only to residents of a certain geographical area. It allows only these residents to buy or sell cryptocurrencies.
-                  
                 - title: Telegram Exchange
                   description: A Telegram exchange is an exchange that operates some or all of its services on Telegram.
                   
@@ -305,6 +302,82 @@ components:
               example: US
             countryOfLicenseSourceLink:
               description: Provides the URL or link to the source that confirms the country where the entity’s license was issued. This link serves as a reference for verification purposes.
+              type: string
+              example: https://source-link.com
+            isScam:
+              $ref: '#/components/schemas/IsScamEnum'
+            scamSource:
+              description: Identifies the origin or source from which the scam information about the entity was obtained. This could include reports, databases, user submissions, or other investigative sources.
+              type: string
+              example: https://source-link.com
+              
+              
+    REX:
+      description: A Regional Exchange is a platform restricted by country or region-specific KYC policies, available only to residents of a certain geographical area. It allows only these residents to buy or sell cryptocurrencies.
+      allOf:
+        - $ref: '#/components/schemas/Entity'
+        - type: object
+          properties:
+            tags:
+              description: Classifies the type or category of content associated with an entity.
+              type: array
+              items:
+                type: string
+                oneOf:
+                - title: Global Exchange
+                  description: A global exchange is a platform that operates without country-specific KYC policies, allowing individuals from various countries to register and engage in buying or selling cryptocurrencies.
+                  
+                - title: Telegram Exchange
+                  description: A Telegram exchange is an exchange that operates some or all of its services on Telegram.
+                  
+                - title: On Off Ramp
+                  description: An on-off ramp is a platform or service within an exchange that enables users to buy and sell cryptocurrency using credit cards or bank transfers, without offering additional trading services like staking or crypto-only spot transactions.
+                  
+                - title: Instant Exchange
+                  description: An instant exchange service is a platform that allows its users to buy and sell cryptocurrencies with manual approval. It utilizes online payment methods like PayPal, Alipay, Wise, among others, as well as traditional payment options.
+                  
+                - title: OTC Desk
+                  description: An OTC desk is a platform or service on an exchange that involves high-volume trading to avoid market slippage and sometimes, it may require an upfront deposit.
+                  
+                - title: Swap Service
+                  description: A swap service in crypto exchanges enables instant, direct cryptocurrency conversions without using traditional order books, often leveraging liquidity pools.
+                  
+                - title: Centralized Bridge
+                  description: A centralized Bridge is a service managed by a central authority that facilitates the transfer of assets between different blockchain networks, providing ease of use but requiring trust in the central entity.
+                  
+                - title: P2P Exchange
+                  description: Centralized P2P services are platforms that facilitate direct cryptocurrency transactions between users but are managed and overseen by a central authority or company. While users trade directly with each other, the platform itself controls the escrow services, user verification, and dispute resolution.             
+                  
+            countryOfIncorporation:
+              description: Specifies the country where the entity is legally registered and incorporated. This information is used to identify the jurisdiction governing the entity's legal status and operations.
+              type: string
+              example: US
+            countryOfIncorporationSourceLink:
+              description: Provides the URL or link to the source that verifies the country of incorporation for the entity. This link serves as a reference for the information provided.
+              type: string
+              example: https://source-link.com
+            kycNotes:
+              description: Additional information or observations related to the Know Your Customer (KYC) verification process for the entity. This may include specific details about the verification, exceptions, or any issues encountered.
+              type: string
+              example: note
+            kycVerification:
+              $ref: '#/components/schemas/KycVerification'
+            osint:
+              description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
+              type: string
+            supportedFiat:
+              description: List of supportedFiat.
+              type: array
+              items:
+                $ref: '#/components/schemas/SupportedFiatEnum'
+            isLicensed:
+              $ref: '#/components/schemas/IsLicensedEnum'
+            countryOfLicense:
+              description: Specifies the country in which the entity has obtained its operating license. This identifies the jurisdiction that governs the entity's licensed activities.
+              type: string
+              example: US
+            countryOfLicenseSourceLink:
+              description: Provides the URL or link to the source that confirms the country where the entity's license was issued. This link serves as a reference for verification purposes.
               type: string
               example: https://source-link.com
             isScam:
@@ -1271,6 +1344,7 @@ components:
               - $ref: '#/components/schemas/ATM'
               - $ref: '#/components/schemas/CRIM'
               - $ref: '#/components/schemas/CEFI'
+              - $ref: '#/components/schemas/REX'
               - $ref: '#/components/schemas/CUST'
               - $ref: '#/components/schemas/DON'
               - $ref: '#/components/schemas/ETF'
@@ -1357,6 +1431,8 @@ components:
         description: Cryptoasset ATMs also known as Automated Teller Machines, are self-service kiosks enabling individuals to buy or sell Bitcoin and other cryptocurrencies using cash or debit cards
       - title: CEFI
         description: A financial system where traditional financial services (such as trading, lending, and borrowing) are managed by centralized entities or institutions. In CeFi, a trusted intermediary holds and controls the users’ funds and data, often requiring compliance with regulations like KYC and AML (Anti-Money Laundering).
+      - title: REX
+        description: A Regional Exchange is a platform restricted by country or region-specific KYC policies, available only to residents of a certain geographical area. It allows only these residents to buy or sell cryptocurrencies.
       - title: CUST
         description: Custodial Services refer to third-party providers that manage and safeguard cryptocurrency assets on behalf of their clients, holding the private keys and offering security and ease of access to the funds. 
       - title: DON
