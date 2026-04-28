@@ -324,9 +324,6 @@ components:
               items:
                 type: string
                 oneOf:
-                - title: Global Exchange
-                  description: A global exchange is a platform that operates without country-specific KYC policies, allowing individuals from various countries to register and engage in buying or selling cryptocurrencies.
-                  
                 - title: Telegram Exchange
                   description: A Telegram exchange is an exchange that operates some or all of its services on Telegram.
                   
