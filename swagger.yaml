@@ -1140,6 +1140,11 @@ components:
       description: The sync event information for entities that have been modified/deleted
       type: object
       properties:
+        logId:
+          description: Unique identifier for this sync log entry.
+          type: integer
+          format: int64
+          example: 12
         entityId:
           description: Unique integer assigned to each entity.
           type: integer
@@ -1164,6 +1169,11 @@ components:
       description: The sync event information for traces that have been modified/deleted
       type: object
       properties:
+        logId:
+          description: Unique identifier for this sync log entry.
+          type: integer
+          format: int64
+          example: 28
         traceId:
           description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
           type: integer
