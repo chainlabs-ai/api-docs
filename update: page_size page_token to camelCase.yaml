@@ -1198,7 +1198,8 @@ components:
           example: 2017-07-21T17:32:28Z
         pageToken:
           description: Key used to fetch the next page of entities. When empty, the first page is returned.
-          type: string
+          type: integer
+          format: int64
         pageSize:
           description: Specifies the number of entities to be returned in a page. The default is 20
           type: integer
@@ -1247,7 +1248,8 @@ components:
           example: 2017-07-21T17:32:28Z
         pageToken:
           description: Key used to fetch the next page of traces. When empty, the first page is returned.
-          type: string
+          type: integer
+          format: int64
         pageSize:
           description: Specifies the number of traces to be returned in a page. The default is 30
           type: integer
@@ -1274,7 +1276,8 @@ components:
           example: 2017-07-21T17:32:28Z
         pageToken:
           description: Key used to fetch the next page of sync events. When empty, the first page is returned.
-          type: string
+          type: integer
+          format: int64
         pageSize:
           description: Specifies the number of sync events to be returned in a page. The default is 50.
           type: integer
@@ -1301,7 +1304,8 @@ components:
           example: 2017-07-21T17:32:28Z
         pageToken:
           description: Key used to fetch the next page of sync events. When empty, the first page is returned.
-          type: string
+          type: integer
+          format: int64
         pageSize:
           description: Specifies the number of sync events to be returned in a page. The default is 50
           type: integer
@@ -1341,7 +1345,8 @@ components:
               - $ref: '#/components/schemas/CSAM'
         next_page_token:
           description: To get the next page of entities, set pageToken value to the nextPageToken returned in the response.
-          type: string
+          type: integer
+          format: int64
           nullable: true
     TracesResponse:
       type: object
@@ -1352,7 +1357,8 @@ components:
             $ref: '#/components/schemas/Trace'
         next_page_token:
           description: To get the next page of traces, set pageToken value to the nextPageToken returned in the response.
-          type: string
+          type: integer
+          format: int64
           nullable: true
     SyncEntitiesResponse:
       type: object
@@ -1363,7 +1369,8 @@ components:
             $ref: '#/components/schemas/SyncEntitiesEvent'
         next_page_token:
           description: To get the next page of sync events, set pageToken value to the nextPageToken returned in the response.
-          type: string
+          type: integer
+          format: int64
           nullable: true
     SyncTracesResponse:
       type: object
@@ -1374,7 +1381,8 @@ components:
             $ref: '#/components/schemas/SyncTracesEvent'
         next_page_token:
           description: To get the next page of sync events, set pageToken value to the nextPageToken returned in the response.
-          type: string
+          type: integer
+          format: int64
           nullable: true
     TransactionTypeEnum:
       type: string
