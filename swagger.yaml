@@ -178,6 +178,10 @@ components:
               type: string
               description: Specifies the physical address or geographical coordinates where the ATM is installed.
               example: https://maps.app.goo.gl/oe4QrRpohBPHZZVy8
+            atmCountry:
+              description: Specifies the country where the ATM machine is physically located, as an ISO 3166-1 alpha-2 code. May differ from the country of incorporation of the operator.
+              type: string
+              example: ES
             operatedBy:
               description: Identifies the organization, company, or individual responsible for managing and maintaining the ATM.
               type: string
