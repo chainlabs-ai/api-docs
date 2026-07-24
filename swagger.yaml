@@ -736,7 +736,7 @@ components:
               description: Classifies the type or category of content associated with an entity.
               type: string
               oneOf:
-              - title: Individuals
+              - title: Individual
                 description: A well-known individual who has publicly acknowledged ownership of a specific cryptocurrency wallet, or an individual identified by virtue of being sanctioned by a regime, with cryptocurrency addresses attributed to them, regardless of public acknowledgment.
 
               - title: Company
@@ -880,7 +880,7 @@ components:
               description: Classifies the type or category of content associated with an entity.
               type: string
               oneOf:
-              - title: Forum Vendor
+              - title: Forum
                 description: Darknet market forum vendor refers to DNM vendors identified on forums, regardless of where the transaction was completed. In most cases, forum vendors will continue transaction communication on a privacy enhancing software like Telegram.
 
               - title: Multi Vendor
