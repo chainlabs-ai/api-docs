@@ -373,10 +373,15 @@ components:
           $ref: '#/components/schemas/TokenEnum'
         type:
           $ref: '#/components/schemas/TypeEnum'
-        walletType:
-          description: The role of the address for the entity. One of Deposit wallet, Hot wallet, Cold wallet, Custody wallet, Treasury/Reserve, Burn wallet.
-          type: string
-          example: Deposit wallet
+        # walletType is NOT documented yet -- it is still being populated (as of 2026-08-26
+        # only ~1.4% of delivered sourced rows have a value, and the EVM backfill is paused).
+        # The API DOES already return the field (live since 2026-07-20), so clients will see
+        # a mostly-null walletType key that this spec does not mention. Uncomment once the
+        # data is complete enough to promise.
+        # walletType:
+        #   description: The role of the address for the entity. One of Deposit wallet, Hot wallet, Cold wallet, Custody wallet, Treasury/Reserve, Burn wallet.
+        #   type: string
+        #   example: Deposit wallet
         psp:
           description: Indicates whether the blockchain address was generated through a Payment Service Provider (PSP) infrastructure used by the entity for processing transactions.
           type: string
