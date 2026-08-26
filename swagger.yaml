@@ -7,12 +7,61 @@ info:
 
     The Chainlabs API provides an automated way of retrieving traced seed addresses, corresponding metadata, and screenshot proofs to replace the monthly manual CSV deliveries.
 
-    To retrieve all historical and newly added entities, traces, and screenshots, use the */entities* and */traces* endpoints. To receive updates on modifications or deletions of existing data, use the */sync_entities* and */sync_traces* endpoints.
-  version: 0.1.0
+    To retrieve all historical and newly added entities, traces, and sourced data, use the */entities*, */traces*, and */sourced_data* endpoints. To receive updates on modifications or deletions of existing data, use the */sync_entities*, */sync_traces*, and */sync_sourced_data* endpoints.
+
+    **Authentication.** All data endpoints require a JWT bearer token. Obtain one from */auth_token* using your `user_name` and base64-encoded `api_key`, then send it as `Authorization: Bearer <token>`.
+
+    **Pagination.** Responses are cursor-paginated. Each request returns up to `pageSize` records plus a `nextPageToken`; pass it back as `pageToken` to fetch the next page. When `nextPageToken` is null, there are no more pages.
+
+    **Access scope.** Each client only receives the entities, traces, and sourced data permitted by its access configuration (categories, sources, tokens, transaction types, and tags). Trial clients receive a representative subset of that data.
+  version: 1.0.0
+
 servers:
   - url: http://api.chainlabs.ai
     description: Production
+
+# Auth is intentionally NOT declared as an OpenAPI security requirement: we don't want
+# the rendered Swagger UI to offer an "Authorize" button or live browser calls. The API
+# still requires `Authorization: Bearer <JWT>` on every data endpoint at runtime.
+# security:
+#   - bearerAuth: []
+
+tags:
+  # - name: Authentication      # auth endpoint intentionally not exposed in rendered docs
+  #   description: Obtain an access token.
+  - name: Entities
+    description: Entity metadata and entity sync events.
+  - name: Traces
+    description: First-party traced addresses and trace sync events.
+  - name: Sourced Data
+    description: Externally sourced addresses and sourced-data sync events.
+  - name: System
+    description: Health checks.
+
 paths:
+  # /auth_token is intentionally NOT documented as an operation, so the rendered Swagger
+  # UI can't be used to authenticate and call the API from a browser. Clients obtain a
+  # token at runtime by POSTing {"user_name", "api_key" (base64)} to /auth_token and
+  # sending the returned JWT as `Authorization: Bearer <token>` (see info.description and
+  # the AuthTokenRequest schema). To re-enable interactive docs, uncomment below.
+  # /auth_token:
+  #   post:
+  #     tags: [Authentication]
+  #     summary: Exchange a user_name and api_key for a JWT access token
+  #     description: Returns a JWT access token used to authorize all data endpoints. Send the api_key base64-encoded.
+  #     operationId: authToken
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/AuthTokenRequest'
+  #     responses:
+  #       '200':
+  #         description: A JWT access token (a bare JSON string).
+  #       '400': { description: Bad request }
+  #       '401': { description: Bad username or API key }
+
   /entities:
     post:
       tags:
@@ -39,32 +88,7 @@ paths:
           description: Unauthorized error
         '500':
           description: Internal server error
-  /traces:
-    post:
-      tags:
-        - Traces
-      summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, dateTimeAddedFrom, dateTimeAddedTo
-      description: Returns the traces that match the criteria provided in the request. All traces are returned if the request is empty.
-      operationId: traces
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TracesRequest'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TracesResponse'
-        '400':
-          description: Invalid request
-        '401':
-          description: Unauthorized error
-        '500':
-          description: Internal server error
+
   /sync_entities:
     post:
       tags:
@@ -91,6 +115,34 @@ paths:
           description: Unauthorized error
         '500':
           description: Internal server error
+
+  /traces:
+    post:
+      tags:
+        - Traces
+      summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, dateTimeAddedFrom, dateTimeAddedTo
+      description: Returns the traces that match the criteria provided in the request. All traces are returned if the request is empty.
+      operationId: traces
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TracesRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TracesResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
+
   /sync_traces:
     post:
       tags:
@@ -117,8 +169,95 @@ paths:
           description: Unauthorized error
         '500':
           description: Internal server error
+
+  /sourced_data:
+    post:
+      tags:
+        - Sourced Data
+      summary: Get sourced data filtered by ids, entityIds, categoryIds, tokens, type, dateTimeAddedFrom, dateTimeAddedTo
+      description: Returns externally sourced addresses (OSINT / scraped / third-party) that match the criteria provided in the request. All sourced data is returned if the request is empty.
+      operationId: sourcedData
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourcedDataRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourcedDataResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
+
+  /sync_sourced_data:
+    post:
+      tags:
+        - Sourced Data
+      summary: Get sync events (modification/deletion) for existing sourced data filtered by ids, dateTimeUpdatedFrom, dateTimeUpdatedTo
+      description: Returns sync events (modification/deletion) for the sourced data that matches the criteria provided in the request. All sync events are returned if the request is empty.
+      operationId: syncSourcedData
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncSourcedDataRequest'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncSourcedDataResponse'
+        '400':
+          description: Invalid request
+        '401':
+          description: Unauthorized error
+        '500':
+          description: Internal server error
+
+  /health_check:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Returns the service health.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "true"
+
 components:
+  # securitySchemes intentionally omitted from the rendered docs so Swagger UI shows no
+  # "Authorize" button. The API enforces bearer JWT at runtime regardless.
+  # securitySchemes:
+  #   bearerAuth:
+  #     type: http
+  #     scheme: bearer
+  #     bearerFormat: JWT
+  #     description: "JWT obtained from /auth_token, sent as `Authorization: Bearer <token>`."
+
   schemas:
+
+    # =========================================================================
+    # Core response objects
+    # =========================================================================
     Entity:
       description: The entity object contains all the metadata for an entity.
       type: object
@@ -133,7 +272,7 @@ components:
           type: string
           example: Binance
         categoryId:
-           $ref: '#/components/schemas/CategoryIdEnum'
+          $ref: '#/components/schemas/CategoryIdEnum'
         url:
           type: string
           example: https://binance.com
@@ -143,7 +282,7 @@ components:
           type: string
           description: Date and time when the entity was added to the database.
           format: date-time
-          example: 2024-08-23 11:03:28.488222+00
+          example: 2024-08-23T11:03:28Z
         dateTimeUpdated:
           type: string
           description: Date and time when the entity was last updated.
@@ -154,6 +293,202 @@ components:
           description: Date and time when the metadata was last checked.
           format: date
           example: 2025-02-22
+
+    Trace:
+      description: The trace object contains all the information about a Chainlabs tracing transaction, including the seed address and entity label
+      type: object
+      properties:
+        traceId:
+          description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
+          type: integer
+          format: int64
+          example: 10
+        entityId:
+          description: Unique integer assigned to each entity.
+          type: integer
+          format: int64
+          example: 10
+        categoryId:
+          $ref: '#/components/schemas/CategoryIdEnum'
+        address:
+          type: string
+          description: A blockchain address linked to the entity
+          example: 34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo
+        token:
+          $ref: '#/components/schemas/TokenEnum'
+        transactionId:
+          description: A unique cryptographic string generated for a blockchain transaction, used to verify and track the transaction on the blockchain ledger.
+          type: string
+          example: 74fb65a24350ef3b9380e8232e734416224cd6a2f12cacb66eee9e176b9e337c
+        transactionType:
+          $ref: '#/components/schemas/TransactionTypeEnum'
+        psp:
+          description: Indicates whether the blockchain address was generated through a Payment Service Provider (PSP) infrastructure used by the entity for processing transactions.
+          type: string
+          example: CryptoPay
+        memo:
+          description: A short, optional message or note attached to a transaction or address for additional context or clarification. This is often used for internal reference or to provide specific transaction details.
+          type: string
+          example: ""
+        proofLink:
+          description: A URL linking to a screenshot that serves as evidence of the blockchain address generated during an interaction with the entity.
+          type: string
+          example: https://www.link-to-screenshot.com
+        notes:
+          description: Comments or information provided related to the address.
+          type: string
+          example: hello
+        dateTimeUpdated:
+          description: Date and time when the trace was updated last time.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeAdded:
+          description: Date and time when the trace was added to the database.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+
+    SourcedData:
+      description: A sourced-data object contains an address attributed to an entity from an external source (OSINT, scraped, or third-party provider).
+      type: object
+      properties:
+        id:
+          description: Unique integer assigned to each sourced data record.
+          type: integer
+          format: int64
+          example: 10
+        entityId:
+          description: Unique integer assigned to each entity.
+          type: integer
+          format: int64
+          example: 10
+        categoryId:
+          $ref: '#/components/schemas/CategoryIdEnum'
+        address:
+          type: string
+          description: A blockchain address linked to the entity
+          example: 34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo
+        token:
+          $ref: '#/components/schemas/TokenEnum'
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        walletType:
+          description: The role of the address for the entity. One of Deposit wallet, Hot wallet, Cold wallet, Custody wallet, Treasury/Reserve, Burn wallet.
+          type: string
+          example: Deposit wallet
+        psp:
+          description: Indicates whether the blockchain address was generated through a Payment Service Provider (PSP) infrastructure used by the entity for processing transactions.
+          type: string
+          example: CryptoPay
+        proofLink:
+          description: A URL linking to evidence of the address attribution to the entity.
+          type: string
+          example: https://www.link-to-screenshot.com
+        source:
+          description: The external source from which the address was collected (e.g. GitHub, Arkham, OFAC, ProofOfReserves).
+          type: string
+          example: GitHub
+        dateTimeAdded:
+          description: Date and time when the sourced data record was added to the database.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+
+    SyncEntitiesEvent:
+      description: The sync event information for entities that have been modified/deleted
+      type: object
+      properties:
+        logId:
+          description: Unique identifier for this sync log entry.
+          type: integer
+          format: int64
+          example: 12
+        entityId:
+          description: Unique integer assigned to each entity.
+          type: integer
+          format: int64
+          example: 10
+        eventType:
+          $ref: '#/components/schemas/EventTypeEnum'
+        attributeName:
+          description: Specifies the name of the column that was updated.
+          type: string
+          example: entityName
+        attributeValue:
+          description: Specifies the new value in the column that was updated.
+          type: string
+          example: hello
+        dateTimeUpdated:
+          description: Date and time when the value was updated.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+
+    SyncTracesEvent:
+      description: The sync event information for traces that have been modified/deleted
+      type: object
+      properties:
+        logId:
+          description: Unique identifier for this sync log entry.
+          type: integer
+          format: int64
+          example: 28
+        traceId:
+          description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
+          type: integer
+          format: int64
+          example: 10
+        eventType:
+          $ref: '#/components/schemas/EventTypeEnum'
+        attributeName:
+          description: Specifies the name of the column that was updated.
+          type: string
+          example: entityName
+        attributeValue:
+          description: Specifies the new value in the column that was updated.
+          type: string
+          example: hello
+        dateTimeUpdated:
+          description: Date and time when the value was updated.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+
+    SyncSourcedDataEvent:
+      description: The sync event information for sourced data that has been modified/deleted
+      type: object
+      properties:
+        logId:
+          description: Unique identifier for this sync log entry.
+          type: integer
+          format: int64
+          example: 28
+        id:
+          description: Unique integer assigned to each sourced data record.
+          type: integer
+          format: int64
+          example: 10
+        eventType:
+          $ref: '#/components/schemas/EventTypeEnum'
+        attributeName:
+          description: Specifies the name of the column that was updated.
+          type: string
+          example: source
+        attributeValue:
+          description: Specifies the new value in the column that was updated.
+          type: string
+          example: hello
+        dateTimeUpdated:
+          description: Date and time when the value was updated.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+
+    # =========================================================================
+    # Per-category entity metadata (entity fields specific to each categoryId).
+    # Returned flattened into the entity object alongside the Entity base fields.
+    # =========================================================================
     ATM:
       description: Cryptoasset ATMs also known as Automated Teller Machines, are self-service kiosks enabling individuals to buy or sell Bitcoin and other cryptocurrencies using cash or debit cards
       allOf:
@@ -202,6 +537,7 @@ components:
               description: Provides the URL or link to the source that confirms the country where the entity’s license was issued. This link serves as a reference for verification purposes.
               type: string
               example: https://source-link.com
+
     CRIM:
       description: Criminal Enterprises category encompasses a broad spectrum of illicit activities conducted with the intention to gain profit or achieve some unlawful objectives. They are often organized and executed within the framework of larger criminal operations or networks.
       allOf:
@@ -214,19 +550,14 @@ components:
               oneOf:
               - title: Violent Crimes
                 description: (Assaults and Battery - Includes beatings, maiming, stabbing, breaking of bones, brutal attacks, muscular warnings.), (Homicide and Manslaughter - Encompasses activities like killings, torture, murder, executions, sniper jobs, assassination, making killings look like accidents.), (Sexual Offenses - Covers all instances of rape, necrophilia, incest, and other non-consensual sexual activities.)
-
               - title: Exploitative and Coercive Crimes
                 description: (Kidnapping and Abduction - Involves kidnapping, abductions, and related activities aimed at unlawfully detaining individuals.), (Blackmail and Extortion - Includes blackmail, threats, and extortion by exploiting victims' vulnerabilities.)
-
               - title: Property and Financial Crimes
                 description: (Theft and Burglary - Pertains to theft, burglary, plant robbery, and other forms of property theft.), (Arson and Damage - Encompasses arson, sabotage, damage to goods and properties, setting fires to homes or workplaces.), (Fraud and Cybercrime - Includes hacking (website, email, social media), DDoS attacks, grades changing, and other forms of deception and cyber attacks.)
-
               - title: Substance Related Crimes
                 description: (Drug Trafficking - Deals with the illegal trade and distribution of drugs like cannabis, ketamine, ecstasy, opioids, cocaine, speed.), (Illegal Arms Trafficking - Involves the sale and distribution of illegal firearms, explosives, grenades, sniper rifles.), (Controlled Substance Trafficking - "Purchasing research chemicals" could be categorized here, especially if these chemicals are intended for illegal use or are controlled substances.)
-
               - title: Morbid and Shock Content
                 description: (Gore and Snuff - Involves the distribution or creation of content showcasing real-life violence, death, and sexual violence.), (Extreme Fetishes - Encompasses activities related to extreme fetish, BDSM, bestiality, revenge porn, and other explicit or extreme content.)
-
               - title: Psychological and Emotional Crimes
                 description: (Torture and Cruelty - Includes all forms of physical and psychological torture, severe torture to death, and other cruel treatments.), (Ruination and Sabotage - Activities aimed at wrecking lives, bio attacks, paralyzing, depriving of vision, and other forms of personal sabotage.)
             OSINT:
@@ -255,28 +586,20 @@ components:
               oneOf:
               - title: Global Exchange
                 description: A global exchange is a platform that operates without country-specific KYC policies, allowing individuals from various countries to register and engage in buying or selling cryptocurrencies.
-
               - title: Telegram Exchange
                 description: A Telegram exchange is an exchange that operates some or all of its services on Telegram.
-
               - title: On Off Ramp
                 description: An on-off ramp is a platform or service within an exchange that enables users to buy and sell cryptocurrency using credit cards or bank transfers, without offering additional trading services like staking or crypto-only spot transactions.
-
               - title: Instant Exchange
                 description: An instant exchange service is a platform that allows its users to buy and sell cryptocurrencies with manual approval. It utilizes online payment methods like PayPal, Alipay, Wise, among others, as well as traditional payment options.
-
               - title: OTC Desk
                 description: An OTC desk is a platform or service on an exchange that involves high-volume trading to avoid market slippage and sometimes, it may require an upfront deposit.
-
               - title: Swap Service
                 description: A swap service in crypto exchanges enables instant, direct cryptocurrency conversions without using traditional order books, often leveraging liquidity pools.
-
               - title: Centralized Bridge
                 description: A centralized Bridge is a service managed by a central authority that facilitates the transfer of assets between different blockchain networks, providing ease of use but requiring trust in the central entity.
-
               - title: P2P Exchange
                 description: Centralized P2P services are platforms that facilitate direct cryptocurrency transactions between users but are managed and overseen by a central authority or company. While users trade directly with each other, the platform itself controls the escrow services, user verification, and dispute resolution.
-
             countryOfIncorporation:
               description: Specifies the country where the entity is legally registered and incorporated. This information is used to identify the jurisdiction governing the entity’s legal status and operations.
               type: string
@@ -314,7 +637,6 @@ components:
               type: string
               example: https://source-link.com
 
-
     REX:
       description: A Regional Exchange is a platform restricted by country or region-specific KYC policies, available only to residents of a certain geographical area. It allows only these residents to buy or sell cryptocurrencies.
       allOf:
@@ -327,25 +649,18 @@ components:
               oneOf:
               - title: Telegram Exchange
                 description: A Telegram exchange is an exchange that operates some or all of its services on Telegram.
-
               - title: On Off Ramp
                 description: An on-off ramp is a platform or service within an exchange that enables users to buy and sell cryptocurrency using credit cards or bank transfers, without offering additional trading services like staking or crypto-only spot transactions.
-
               - title: Instant Exchange
                 description: An instant exchange service is a platform that allows its users to buy and sell cryptocurrencies with manual approval. It utilizes online payment methods like PayPal, Alipay, Wise, among others, as well as traditional payment options.
-
               - title: OTC Desk
                 description: An OTC desk is a platform or service on an exchange that involves high-volume trading to avoid market slippage and sometimes, it may require an upfront deposit.
-
               - title: Swap Service
                 description: A swap service in crypto exchanges enables instant, direct cryptocurrency conversions without using traditional order books, often leveraging liquidity pools.
-
               - title: Centralized Bridge
                 description: A centralized Bridge is a service managed by a central authority that facilitates the transfer of assets between different blockchain networks, providing ease of use but requiring trust in the central entity.
-
               - title: P2P Exchange
                 description: Centralized P2P services are platforms that facilitate direct cryptocurrency transactions between users but are managed and overseen by a central authority or company. While users trade directly with each other, the platform itself controls the escrow services, user verification, and dispute resolution.
-
             countryOfIncorporation:
               description: Specifies the country where the entity is legally registered and incorporated. This information is used to identify the jurisdiction governing the entity's legal status and operations.
               type: string
@@ -383,7 +698,6 @@ components:
               type: string
               example: https://source-link.com
 
-
     CUST:
       description: Custodial Services refer to third-party providers that manage and safeguard cryptocurrency assets on behalf of their clients, holding the private keys and offering security and ease of access to the funds.
       allOf:
@@ -396,10 +710,8 @@ components:
               oneOf:
               - title: Bank
                 description: Custodial Services refer to third-party providers that manage and safeguard cryptocurrency assets on behalf of their clients, holding the private keys and offering security and ease of access to the funds.
-
               - title: Hybrid Custody
                 description: Describes custodial solutions where both the user and the service provider share control over cryptocurrency assets, typically by splitting key management between the user and the provider. This form of custody balances user autonomy with additional security and backup support from the provider, allowing for flexibility in asset management without fully ceding control or security to a third party.
-
             countryOfIncorporation:
               description: Specifies the country where the entity is legally registered and incorporated. This information is used to identify the jurisdiction governing the entity’s legal status and operations.
               type: string
@@ -437,7 +749,6 @@ components:
               type: string
               example: https://source-link.com
 
-
     ETF:
       description: Refers to the various parties or organizations involved in the creation, management, and trading of Exchange-Traded Funds (ETFs). These entities play specific roles in the operation and oversight of ETFs in the financial markets.
       allOf:
@@ -455,6 +766,7 @@ components:
               description: Provides the URL or link to the source that verifies the country of incorporation for the entity. This link serves as a reference for the information provided.
               type: string
               example: https://source-link.com
+
     EXTR:
       description: Extremist and violent groups are organizations or collectives that hold radical ideologies and often engage in or promote violent activities to achieve political, religious, or ideological objectives.
       allOf:
@@ -513,7 +825,6 @@ components:
               oneOf:
               - title: Adult
                 description: This tag identifies entities or services that primarily provide content, products, or services intended for adult audiences, typically restricted by age.
-
             OSINT:
               description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
               type: string
@@ -610,7 +921,6 @@ components:
               oneOf:
               - title: Clearnet
                 description: Refers to websites or platforms accessible on the standard internet (Clearnet)
-
               - title: Darkweb
                 description: Refers to hidden websites and platforms on the dark web. These sites are typically accessed via anonymity networks like Tor, and operate beyond standard internet oversight, making them more difficult to detect and shut down.
             isScam:
@@ -672,31 +982,22 @@ components:
               oneOf:
               - title: Investment Fraud
                 description: Victim believes they are investing in a legitimate opportunity or strategy expecting profits or yield, but funds are stolen or payouts never materialize.
-
               - title: Platform Fraud
                 description: Victim believes they are using a legitimate platform (exchange, broker, wallet, or dApp), but the platform is fake or manipulated to steal deposits.
-
               - title: Impersonation Fraud
                 description: Victim believes they are interacting with a trusted entity or individual (company, authority, support agent, employer), which is falsely impersonated.
-
               - title: Romance Fraud
                 description: Victim believes they are in a genuine personal or romantic relationship, and emotional manipulation is used to induce payments or transfers.
-
               - title: Advance Fee Fraud
                 description: Victim believes paying an upfront fee will unlock a reward, prize, withdrawal, doubling, or other promised benefit that never arrives.
-
               - title: Extortion
                 description: Victim believes they must pay to avoid harm, exposure, loss of funds, or to recover assets, often under threats or coercive pressure.
-
               - title: Account Takeover Fraud
                 description: Victim believes their real account was compromised or hijacked, and losses result from unauthorized access or control.
-
               - title: Unknown
                 description: Insufficient information to confidently assign a primary scam subtag.
-
               - title: Unclassifiable
                 description: No report, narrative, or usable data exists to determine victim belief or scam mechanics.
-
 
     PSP:
       description: PSPs (Payment Service Providers) refer to companies that facilitate businesses in accepting cryptocurrencies as payment, offering solutions for processing transactions, converting digital currencies to fiat, and ensuring secure transfers.
@@ -738,13 +1039,10 @@ components:
               oneOf:
               - title: Individual
                 description: A well-known individual who has publicly acknowledged ownership of a specific cryptocurrency wallet, or an individual identified by virtue of being sanctioned by a regime, with cryptocurrency addresses attributed to them, regardless of public acknowledgment.
-
               - title: Company
                 description: Companies that integrate cryptocurrency as a payment option for certain products, or companies identified by virtue of being sanctioned by a regime, with cryptocurrency addresses attributed to them.
-
               - title: Government
                 description: This includes government agencies that hold cryptocurrency for various purposes with identified cryptocurrency addresses
-
             countryOfOperationAndOrigin:
               description: This metadata field identifies the specific country of operation or origin of the entity.
               type: string
@@ -770,7 +1068,6 @@ components:
               oneOf:
               - title: Centralized
                 description: Centralized mixer refers to mixing services controlled or managed by a single entity or organization, which controls the mixing process and holds users' funds temporarily during the operation.
-
               - title: Decentralized
                 description: Decentralized mixer refers to automated mixing services that operate independently through the use of smart contracts.
             OSINT:
@@ -795,7 +1092,6 @@ components:
               oneOf:
               - title: Centralized
                 description: Centralized gambling refers to online betting or gambling platforms managed by a single company or entity that controls the games, odds, and user accounts.
-
               - title: Decentralized
                 description: Decentralized gambling refers to online platforms that facilitate betting and gambling activities without a central authority overseeing the operations. These services run on blockchain technology, utilizing smart contracts to execute bets and distribute winnings automatically and transparently.
             countryOfIncorporation:
@@ -848,16 +1144,12 @@ components:
               oneOf:
               - title: Scam
                 description: Illicit NFTs (scams) refers to NFTs that were created as a scam to defraud investors.
-
               - title: CSAM
                 description: Illicit NFTs (CSAM) refers to NFTs that are associated with, or used to distribute, Child Sexual Abuse Material.
-
               - title: TF
                 description: Illicit NFTs (TF) refers to NFTs that are potentially used as a means to finance terrorist activities.
-
               - title: Propaganda
                 description: Illicit NFTs (Propaganda) refers to NFTs created or used to spread political messages, ideologies, or influence public opinion.
-
               - title: Exploited
                 description: Illicit NFTs (exploited) refers to NFTs that were compromised or subjected to smart contract vulnerabilities, leading to a significant loss in their market value.
             OSINT:
@@ -882,13 +1174,10 @@ components:
               oneOf:
               - title: Forum
                 description: Darknet market forum vendor refers to DNM vendors identified on forums, regardless of where the transaction was completed. In most cases, forum vendors will continue transaction communication on a privacy enhancing software like Telegram.
-
               - title: Multi Vendor
                 description: Darknet market multi vendor refers to DNMs where multiple vendors sell goods or services, often illegal, with transactions typically conducted in cryptocurrencies to maintain privacy and security.
-
               - title: Single Vendor
                 description: Darknet market single vendor refers to DNMs where a single vendor sells goods or services, often illicit. These platforms are operated by one entity or individual, offering a more limited selection but potentially more specialized or trusted offerings.
-
               - title: Telegram
                 description: Darknet market Telegram vendor refers to marketplaces discovered on telegram or where a vendor identified on a forum decides to conduct transaction off a telegram channel or chat.
             screenshotFrontPage:
@@ -921,7 +1210,6 @@ components:
               description: Refers to the set of guidelines and regulations that govern the behavior of vendors and buyers on darknet marketplaces (DNMs). These rules are established to maintain order, resolve disputes, and enforce certain standards within the illegal marketplace.
               type: string
 
-
     VNH:
       description: A virtual private network (VPN) gives users online privacy and anonymity by creating a private network from a public internet connection. A Hosting is a service that offers hosting services such as Domain hosting, VPS ( virtual machine sold as a service by an Internet hosting), bulletproof hosting (web hosting resilient to cyberattacks). whilst a virtual private network (VPN) gives users online privacy and anonymity by creating a private network from a public internet connection."
       allOf:
@@ -934,16 +1222,12 @@ components:
               oneOf:
               - title: Clearnet
                 description: Clearnet VPN and Hosting refers to hosting and VPN services found on the web without the use of specialized tools like TOR browsers
-
               - title: Darkweb
                 description: Darkweb VPN and Hosting refers to hosting and VPN services found on the web with the aid of specialized tools like TOR browsers
-
               - title: VPN
                 description: The VPN tag is used to specify if entity  and address (on clearnet or darkweb) belongs to VPN
-
               - title: Hosting
                 description: The hosting tag is used to specify if entity  and address (on clearnet or darkweb) belongs to hosting
-
               - title: Forum Vendor
                 description: Forum vendors refers to VPN and Hosting vendors identified on forums, regardless of where the transaction was completed. In most cases, forum vendors will continue transaction communication on a privacy enhancing software like Telegram.
             OSINT:
@@ -964,7 +1248,6 @@ components:
               type: string
               example: https://source-link.com
 
-
     DEFI:
       description: A financial ecosystem built on blockchain technology that operates without intermediaries, allowing users to access services like lending, borrowing, trading, and investing directly through smart contracts. In DeFi, control and ownership of assets remain with the user, and transactions are facilitated by decentralized protocols rather than centralized institutions.
       allOf:
@@ -977,25 +1260,18 @@ components:
               oneOf:
               - title: DEX/Swap Services
                 description: A Decentralized exchange (DEX) is an exchange that operates on a non-custodial basis, allowing users to retain control of their private keys during transactions, which are typically facilitated through smart contracts on the DEX platform.
-
               - title: Decentralized Bridge
                 description: A decentralized bridge is a service that enables the trustless and secure transfer of assets between different blockchain networks, leveraging smart contracts and decentralized validators to ensure seamless interoperability and enhanced security.
-
               - title: P2P Exchange
                 description: Decentralized P2P services are platforms that enable direct cryptocurrency transactions between users without the need for a central authority. These platforms rely on blockchain technology and smart contracts to facilitate and secure trades.
-
               - title: Derivative And Synthetic Assets
                 description: Derivative and Synthetic Assets entities leverage smart contracts, oracles, and collateralization mechanisms, they provide users with advanced tools for hedging, speculation, and accessing a diverse array of assets.
-
               - title: DAO
                 description: DAO entities, or Decentralized Autonomous Organizations, are entities in the decentralized finance (DeFi) ecosystem that operate based on rules encoded in smart contracts. These rules govern the organization’s operations, decision-making processes, and governance structures, enabling them to function without centralized control.
-
               - title: Yield Farming and Liquidity Mining
                 description: This represents a new category of financial instrument other than exchanges that comprises of yields, loans, insurance and staking platform. Example is Cream finance, Alchemix, Aave etc.
-
               - title: Infrastructure
                 description: This refers to entities that offers software, hardware, and other essential resources and services to blockchain-based products. This also includes Oracles.
-
             OSINT:
               description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
               type: string
@@ -1026,13 +1302,10 @@ components:
               oneOf:
               - title: Clearnet
                 description: Refers to websites or platforms accessible on the standard internet (Clearnet) that are involved in the distribution or facilitation of Child Sexual Abuse Material (CSAM).
-
               - title: Darkweb
                 description: Refers to hidden websites and platforms on the dark web that are involved in the illegal distribution or facilitation of Child Sexual Abuse Material (CSAM). These sites are typically accessed via anonymity networks like Tor, and operate beyond standard internet oversight, making them more difficult to detect and shut down.
-
               - title: Single Vendor
                 description: Refers to a specific platform, website, or operation run by a single entity or individual dedicated to distributing Child Sexual Abuse Material (CSAM). These operations are typically managed by one vendor or group that controls the content and transactions, often for profit or other illicit purposes.
-
               - title: Multi vendor
                 description: Refers to platforms or marketplaces where multiple individuals or entities can sell, trade, or distribute Child Sexual Abuse Material (CSAM). These platforms typically function as marketplaces, allowing various vendors to upload and sell illegal content, often using anonymous payment methods like cryptocurrencies.
             OSINT:
@@ -1055,118 +1328,29 @@ components:
               description: Describes the various methods by which individuals can gain access to platforms distributing Child Sexual Abuse Material (CSAM). These methods may involve different forms of authentication, payment, or verification.
               type: string
 
-    Trace:
-      description: The trace object contains all the information about a Chainlabs tracing transaction, including the seed address and entity label
-      type: object
-      properties:
-        traceId:
-          description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
-          type: integer
-          format: int64
-          example: 10
-        entityId:
-          description: Unique integer assigned to each entity.
-          type: integer
-          format: int64
-          example: 10
-        categoryId:
-         $ref: '#/components/schemas/CategoryIdEnum'
-        address:
-          type: string
-          description: A blockchain address linked to the entity
-          example: 34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo
-        token:
-          $ref: '#/components/schemas/TokenEnum'
-        transactionId:
-          description: A unique cryptographic string generated for a blockchain transaction, used to verify and track the transaction on the blockchain ledger.
-          type: string
-          example: 74fb65a24350ef3b9380e8232e734416224cd6a2f12cacb66eee9e176b9e337c
-        transactionType:
-          $ref: '#/components/schemas/TransactionTypeEnum'
-        psp:
-          description: Indicates whether the blockchain address was generated through a Payment Service Provider (PSP) infrastructure used by the entity for processing transactions.
-          type: string
-          example: CryptoPay
-        memo:
-          description: A short, optional message or note attached to a transaction or address for additional context or clarification. This is often used for internal reference or to provide specific transaction details.
-          type: string
-          example: ""
-        proofLink:
-          description: A URL linking to a screenshot that serves as evidence of the blockchain address generated during an interaction with the entity.
-          type: string
-          example: https://www.link-to-screenshot.com
-        notes:
-          description: Comments or information provided related to the address.
-          type: string
-          example: hello
-        dateTimeUpdated:
-          description: Date and time when the trace was updated last time.
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-        dateTimeAdded:
-          description: Date and time when the trace was added to the database.
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-    SyncEntitiesEvent:
-      description: The sync event information for entities that have been modified/deleted
-      type: object
-      properties:
-        logId:
-          description: Unique identifier for this sync log entry.
-          type: integer
-          format: int64
-          example: 12
-        entityId:
-          description: Unique integer assigned to each entity.
-          type: integer
-          format: int64
-          example: 10
-        eventType:
-          $ref: '#/components/schemas/EventTypeEnum'
-        attributeName:
-          description: Specifies the name of the column that was updated.
-          type: string
-          example: entityName
-        attributeValue:
-          description: Specifies the new value in the column that was updated.
-          type: string
-          example: hello
-        dateTimeUpdated:
-          description: Date and time when the value was updated.
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
-    SyncTracesEvent:
-      description: The sync event information for traces that have been modified/deleted
-      type: object
-      properties:
-        logId:
-          description: Unique identifier for this sync log entry.
-          type: integer
-          format: int64
-          example: 28
-        traceId:
-          description: A unique identifier assigned to a specific blockchain tracing activity, used to track the attribution of a blockchain address.
-          type: integer
-          format: int64
-          example: 10
-        eventType:
-          $ref: '#/components/schemas/EventTypeEnum'
-        attributeName:
-          description: Specifies the name of the column that was updated.
-          type: string
-          example: entityName
-        attributeValue:
-          description: Specifies the new value in the column that was updated.
-          type: string
-          example: hello
-        dateTimeUpdated:
-          description: Date and time when the value was updated.
-          type: string
-          format: date-time
-          example: 2017-07-21T17:32:28Z
+    # =========================================================================
+    # Request bodies
+    # =========================================================================
+    # AuthTokenRequest is intentionally NOT rendered: keeping the auth payload out of the
+    # published docs discourages anyone from pasting a live API key into a browser. Nothing
+    # references this schema (the /auth_token operation above is commented out too).
+    # The example below is a DUMMY value -- never put a real api_key in this file: GitHub
+    # Pages serves the raw YAML publicly, so a commented-out credential is still exposed.
+    # AuthTokenRequest:
+    #   type: object
+    #   required:
+    #     - user_name
+    #     - api_key
+    #   properties:
+    #     user_name:
+    #       description: The client user name.
+    #       type: string
+    #       example: my_client
+    #     api_key:
+    #       description: The client API key, base64-encoded.
+    #       type: string
+    #       example: <BASE64_OF_YOUR_API_KEY>
+
     EntitiesRequest:
       type: object
       properties:
@@ -1185,11 +1369,11 @@ components:
         entityNameRegex:
           description: Regular expression on the entity name.
           type: string
-          example: hello*
+          example: .*binance.*
         urlRegex:
           description: expression on the url.
           type: string
-          example: "*binanc*"
+          example: .*binance.com
         dateTimeAddedFrom:
           description: Starting timestamp for the time range during which the entity was made available
           type: string
@@ -1201,13 +1385,14 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of entities. When empty, the first page is returned.
+          description: Key used to fetch the next page of entities. When empty, the first page is returned. Set it to the nextPageToken from the previous response.
           type: integer
           format: int64
         pageSize:
-          description: Specifies the number of entities to be returned in a page. The default is 20
+          description: Specifies the number of entities to be returned in a page. The default is 20.
           type: integer
           default: 20
+
     TracesRequest:
       type: object
       properties:
@@ -1251,13 +1436,65 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of traces. When empty, the first page is returned.
+          description: Key used to fetch the next page of traces. When empty, the first page is returned. Set it to the nextPageToken from the previous response.
           type: integer
           format: int64
         pageSize:
-          description: Specifies the number of traces to be returned in a page. The default is 30
+          description: Specifies the number of traces to be returned in a page. The default is 30.
           type: integer
           default: 30
+
+    SourcedDataRequest:
+      type: object
+      properties:
+        ids:
+          description: List of sourced data ids
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        entityIds:
+          description: List of entityIds
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        categoryIds:
+          description: List of categoryIds.
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryIdEnum'
+        tokens:
+          description: List of tokens.
+          type: array
+          items:
+            $ref: '#/components/schemas/TokenEnum'
+        type:
+          description: List of sourced data types.
+          type: array
+          items:
+            $ref: '#/components/schemas/TypeEnum'
+        dateTimeAddedFrom:
+          description: Starting timestamp for the time range during which the sourced data was made available
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeAddedTo:
+          description: Ending timestamp for the time range during which the sourced data was made available
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          description: Key used to fetch the next page of sourced data. When empty, the first page is returned. Set it to the nextPageToken from the previous response.
+          type: integer
+          format: int64
+        pageSize:
+          description: Specifies the number of sourced data records to be returned in a page. The default is 30.
+          type: integer
+          default: 30
+
     SyncEntitiesRequest:
       type: object
       properties:
@@ -1279,13 +1516,14 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of sync events. When empty, the first page is returned.
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned. Set it to the nextPageToken from the previous response.
           type: integer
           format: int64
         pageSize:
           description: Specifies the number of sync events to be returned in a page. The default is 50.
           type: integer
           default: 50
+
     SyncTracesRequest:
       type: object
       properties:
@@ -1307,13 +1545,46 @@ components:
           format: date-time
           example: 2017-07-21T17:32:28Z
         pageToken:
-          description: Key used to fetch the next page of sync events. When empty, the first page is returned.
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned. Set it to the nextPageToken from the previous response.
           type: integer
           format: int64
         pageSize:
-          description: Specifies the number of sync events to be returned in a page. The default is 50
+          description: Specifies the number of sync events to be returned in a page. The default is 50.
           type: integer
           default: 50
+
+    SyncSourcedDataRequest:
+      type: object
+      properties:
+        ids:
+          description: List of sourced data ids to find sync events for.
+          type: array
+          items:
+            type: integer
+            format: int64
+            example: 10
+        dateTimeUpdatedFrom:
+          description: Starting timestamp for the time range during which the sourced data was updated.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        dateTimeUpdatedTo:
+          description: Ending timestamp for the time range during which the sourced data was updated.
+          type: string
+          format: date-time
+          example: 2017-07-21T17:32:28Z
+        pageToken:
+          description: Key used to fetch the next page of sync events. When empty, the first page is returned. Set it to the nextPageToken from the previous response.
+          type: integer
+          format: int64
+        pageSize:
+          description: Specifies the number of sync events to be returned in a page. The default is 50.
+          type: integer
+          default: 50
+
+    # =========================================================================
+    # Response bodies
+    # =========================================================================
     EntitiesResponse:
       type: object
       properties:
@@ -1333,6 +1604,7 @@ components:
               - $ref: '#/components/schemas/FCT'
               - $ref: '#/components/schemas/MINE'
               - $ref: '#/components/schemas/OTH'
+              - $ref: '#/components/schemas/OTC'
               - $ref: '#/components/schemas/MLWR'
               - $ref: '#/components/schemas/FORU'
               - $ref: '#/components/schemas/SHOP'
@@ -1347,11 +1619,12 @@ components:
               - $ref: '#/components/schemas/VNH'
               - $ref: '#/components/schemas/DEFI'
               - $ref: '#/components/schemas/CSAM'
-        next_page_token:
-          description: To get the next page of entities, set pageToken value to the nextPageToken returned in the response.
+        nextPageToken:
+          description: To get the next page of entities, set the pageToken value to the nextPageToken returned in the response. Null when there are no more pages.
           type: integer
           format: int64
           nullable: true
+
     TracesResponse:
       type: object
       properties:
@@ -1359,53 +1632,67 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Trace'
-        next_page_token:
-          description: To get the next page of traces, set pageToken value to the nextPageToken returned in the response.
+        nextPageToken:
+          description: To get the next page of traces, set the pageToken value to the nextPageToken returned in the response. Null when there are no more pages.
           type: integer
           format: int64
           nullable: true
+
+    SourcedDataResponse:
+      type: object
+      properties:
+        sourcedData:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourcedData'
+        nextPageToken:
+          description: To get the next page of sourced data, set the pageToken value to the nextPageToken returned in the response. Null when there are no more pages.
+          type: integer
+          format: int64
+          nullable: true
+
     SyncEntitiesResponse:
       type: object
       properties:
-        sync_entities_events:
+        syncEntitiesEvents:
           type: array
           items:
             $ref: '#/components/schemas/SyncEntitiesEvent'
-        next_page_token:
-          description: To get the next page of sync events, set pageToken value to the nextPageToken returned in the response.
+        nextPageToken:
+          description: To get the next page of sync events, set the pageToken value to the nextPageToken returned in the response. Null when there are no more pages.
           type: integer
           format: int64
           nullable: true
+
     SyncTracesResponse:
       type: object
       properties:
-        sync_traces_events:
+        syncTracesEvents:
           type: array
           items:
             $ref: '#/components/schemas/SyncTracesEvent'
-        next_page_token:
-          description: To get the next page of sync events, set pageToken value to the nextPageToken returned in the response.
+        nextPageToken:
+          description: To get the next page of sync events, set the pageToken value to the nextPageToken returned in the response. Null when there are no more pages.
           type: integer
           format: int64
           nullable: true
-    TransactionTypeEnum:
-      type: string
-      description:  Indicates the nature of the transaction performed, providing context for how funds or assets were handled.
-      oneOf:
-      - title: Deposit
-        description:  Funds were added to the wallet through a transfer from another source, marking an inflow of assets to the entity’s wallet (screenshot proof available).
-      - title: Withdraw
-        description: Funds were removed from the wallet through a transfer to another destination, marking an outflow of assets from the entity’s wallet (screenshot proof available).
-      - title: Direct
-        description:  No deposit or withdrawal was necessary, as the wallet was already connected to an active cluster (screenshot proof available).
-      - title: External
-        description: Data was collected or observed from external sources without direct interaction with the wallet. This typically refers to information gathered from scrapped data (screenshot proof unavailable).
-      - title: Private
-        description: The is used to represent private enhancing tokens like Monero (screenshot proof available).
-      - title: Verified OSINT
-        description: Data was collected or observed from a vetted source, usually an organization that verifies the tags (such as OFAC) (screenshot proof unavailable).
-      - title: Community OSINT
-        description: Data gathered from open-source platforms where contributions come from a wide range of users, often resulting in lower confidence due to the unverified nature of the information. Examples include platforms like Labelcloud and Arkham, or individuals posting on Twitter claiming discoveries such as identifying Tesla’s wallet or reporting through sites like Bitcoinabuse.
+
+    SyncSourcedDataResponse:
+      type: object
+      properties:
+        syncSourcedDataEvents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SyncSourcedDataEvent'
+        nextPageToken:
+          description: To get the next page of sync events, set the pageToken value to the nextPageToken returned in the response. Null when there are no more pages.
+          type: integer
+          format: int64
+          nullable: true
+
+    # =========================================================================
+    # Enumerations
+    # =========================================================================
     CategoryIdEnum:
       type: string
       oneOf:
@@ -1464,6 +1751,53 @@ components:
       - title: CSAM
         description: Child Sexual Abuse Material (CSAM) refers not only to platforms but also to any entities involved in displaying and/or selling content that depicts sexually explicit conduct involving minors. This includes images, videos, and other forms of media showcasing such illegal activities.
 
+    TransactionTypeEnum:
+      type: string
+      description:  Indicates the nature of the transaction performed, providing context for how funds or assets were handled.
+      oneOf:
+      - title: Deposit
+        description:  Funds were added to the wallet through a transfer from another source, marking an inflow of assets to the entity’s wallet (screenshot proof available).
+      - title: Withdraw
+        description: Funds were removed from the wallet through a transfer to another destination, marking an outflow of assets from the entity’s wallet (screenshot proof available).
+      - title: Direct
+        description:  No deposit or withdrawal was necessary, as the wallet was already connected to an active cluster (screenshot proof available).
+      - title: External
+        description: Data was collected or observed from external sources without direct interaction with the wallet. This typically refers to information gathered from scrapped data (screenshot proof unavailable).
+      - title: Private
+        description: The is used to represent private enhancing tokens like Monero (screenshot proof available).
+      - title: Verified OSINT
+        description: Data was collected or observed from a vetted source, usually an organization that verifies the tags (such as OFAC) (screenshot proof unavailable).
+      - title: Community OSINT
+        description: Data gathered from open-source platforms where contributions come from a wide range of users, often resulting in lower confidence due to the unverified nature of the information. Examples include platforms like Labelcloud and Arkham, or individuals posting on Twitter claiming discoveries such as identifying Tesla’s wallet or reporting through sites like Bitcoinabuse.
+
+    TypeEnum:
+      type: string
+      description: Indicates how a sourced address was attributed to the entity.
+      oneOf:
+      - title: Verified OSINT
+        description: Data was collected or observed from a vetted source, usually an organization that verifies the tags (such as OFAC) (screenshot proof unavailable).
+      - title: Community OSINT
+        description: Data gathered from open-source platforms where contributions come from a wide range of users, often resulting in lower confidence due to the unverified nature of the information.
+      - title: External
+        description: Data was collected or observed from external sources without direct interaction with the wallet. This typically refers to information gathered from scrapped data (screenshot proof unavailable).
+
+    EventTypeEnum:
+      type: string
+      oneOf:
+      - title: MODIFY
+      - title: DELETE
+
+    OperationalStatusEnum:
+      type: string
+      description: Indicates the current availability and functionality of a website. This status reflects whether the website is accessible to users, temporarily unavailable, or undergoing updates.
+      oneOf:
+      - title: Open
+        description: The website is fully operational and accessible to users.
+      - title: Closed
+        description: The website is not currently available or operational.
+      - title: Updating
+        description: The website is undergoing maintenance or updates, and may have limited or no accessibility during this period.
+
     KycVerification:
       type: string
       description: Lists the types of documents or information that have been used to verify the identity of the entity or individual as part of the Know Your Customer (KYC) process.
@@ -1475,6 +1809,7 @@ components:
         - Phone number
         - Selfie
         - Utility bill
+
     MediaOrServiceType:
       type: string
       description: Specifies the format or medium in which Child Sexual Abuse Material (CSAM) is distributed or consumed. These media types can include images, videos, audio recordings, or text-based descriptions, all of which are illegal.
@@ -1482,16 +1817,7 @@ components:
         - Escort
         - Photos
         - Videos
-    OperationalStatusEnum:
-      type: string
-      description: Indicates the current availability and functionality of a website. This status reflects whether the website is accessible to users, temporarily unavailable, or undergoing updates.
-      oneOf:
-      - title: Open
-        description: The website is fully operational and accessible to users.
-      - title: Closed
-        description: The website is not currently available or operational.
-      - title: Updating
-        description: The website is undergoing maintenance or updates, and may have limited or no accessibility during this period.
+
     IsLicensedEnum:
       type: string
       description: Indicates whether the entity holds a valid license to operate within its respective jurisdiction. This status helps determine the entity’s regulatory compliance.
@@ -1507,6 +1833,7 @@ components:
         - "Yes"
         - "No"
         - Unknown
+
     TokenEnum:
       type: string
       description: A specific cryptocurrency or token that has been tracked through a blockchain tracing process, linked to the entity's activities. See all covered tokens at https://chainlabs.notion.site/coveragelist
@@ -1514,6 +1841,7 @@ components:
       - title: BTC
       - title: ETH
       - title: USDT-ERC20
+
     SupportedFiatEnum:
       description: Fiat currencies that are supported or accepted by the entity, represented as ISO 4217 three-letter currency codes.
       type: string
@@ -1521,8 +1849,3 @@ components:
         - title: USD
         - title: EUR
         - title: GBP
-    EventTypeEnum:
-      type: string
-      oneOf:
-      - title: MODIFY
-      - title: DELETE
