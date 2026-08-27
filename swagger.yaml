@@ -981,6 +981,59 @@ components:
             OSINT:
               description: Refers to information gathered from publicly available sources, often used for investigative purposes. OSINT data can include anything from social media profiles to publicly accessible databases, websites, news articles, and more.
               type: string
+            type:
+              description: Whether the underlying report is treated as community-sourced or verified intelligence. Corresponds to confidenceScore -- higher-confidence reports are Verified OSINT.
+              type: string
+              oneOf:
+              - title: Verified OSINT
+                description: The report has been verified by Chainlabs or comes from a source held to a verification standard.
+              - title: Community OSINT
+                description: The report originates from community submissions and has not been individually verified.
+            confidenceScore:
+              description: Reliability score of the report, from 1 (lowest) to 10 (highest). Determines whether the record is classified as Community OSINT or Verified OSINT (see type).
+              type: number
+              example: 6
+            typeOfReport:
+              description: The kind of report the attribution originates from.
+              type: string
+              oneOf:
+              - title: Community reports
+                description: Submitted by the public, typically through an abuse-reporting platform.
+              - title: Academic paper
+                description: Drawn from a published research dataset.
+              - title: Manually verified
+                description: Individually checked by an analyst.
+              - title: Private investigation
+                description: Produced by a non-public investigation.
+              - title: Law enforcement
+                description: Originating from a law-enforcement body.
+            sourceDescription:
+              description: Description of the originating dataset or report, in the source's own words.
+              type: string
+              example: Phishing-address ground truth from an academic study
+            attackVector:
+              description: The method or methods used to execute the scam. Optional -- unavailable when the execution details are unclear. May carry several values.
+              type: string
+              example: Social Engineering
+              oneOf:
+              - title: Social Engineering
+                description: The victim was manipulated directly into authorising a payment or handing over access.
+              - title: Phishing
+                description: The victim was lured into disclosing credentials or signing a transaction via a deceptive message or page.
+              - title: Malicious dApp / Site
+                description: The victim interacted with a fraudulent application or website that drained funds.
+              - title: Compromised Account
+                description: A legitimate account was taken over and used to carry out the scam.
+              - title: Address Manipulation
+                description: The destination address was altered or spoofed, for example by address poisoning.
+              - title: SIM Swap
+                description: The victim's phone number was hijacked to defeat SMS-based authentication.
+              - title: Insider Abuse
+                description: Someone with privileged access to the platform or organisation carried out the scam.
+              - title: Unknown
+                description: An attack vector applies but could not be determined from the available information.
+              - title: N/A
+                description: No attack vector is applicable to this record.
             tags:
               description: Classifies the type or category of content associated with an entity.
               type: string
