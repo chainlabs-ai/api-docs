@@ -120,7 +120,7 @@ paths:
     post:
       tags:
         - Traces
-      summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, dateTimeAddedFrom, dateTimeAddedTo
+      summary: Get traces filtered by traceIds, entityIds, categoryIds, tokens, transactionTypes, addresses, dateTimeAddedFrom, dateTimeAddedTo
       description: Returns the traces that match the criteria provided in the request. All traces are returned if the request is empty.
       operationId: traces
       requestBody:
@@ -174,7 +174,7 @@ paths:
     post:
       tags:
         - Sourced Data
-      summary: Get sourced data filtered by ids, entityIds, categoryIds, tokens, type, dateTimeAddedFrom, dateTimeAddedTo
+      summary: Get sourced data filtered by ids, entityIds, categoryIds, tokens, type, addresses, dateTimeAddedFrom, dateTimeAddedTo
       description: Returns externally sourced addresses (OSINT / scraped / third-party) that match the criteria provided in the request. All sourced data is returned if the request is empty.
       operationId: sourcedData
       requestBody:
@@ -1483,6 +1483,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TransactionTypeEnum'
+        addresses:
+          description: >-
+            List of addresses. Returns only the records at these addresses, within the data
+            the client is entitled to. Addresses starting with 0x match regardless of letter
+            case; all other addresses must match exactly. At most 1,000 per request (more
+            returns 400). One address can have several records, for example a shared deposit address used with different memos.
+          type: array
+          maxItems: 1000
+          items:
+            type: string
+            example: 14ueSwunUkLYdKz8xqqCqMuqXErSu4Myz4
         dateTimeAddedFrom:
           description: Starting timestamp for the time range during which the entity was made available
           type: string
@@ -1534,6 +1545,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TypeEnum'
+        addresses:
+          description: >-
+            List of addresses. Returns only the records at these addresses, within the data
+            the client is entitled to. Addresses starting with 0x match regardless of letter
+            case; all other addresses must match exactly. At most 1,000 per request (more
+            returns 400). One address can have several records, for example when it is reported by more than one source.
+          type: array
+          maxItems: 1000
+          items:
+            type: string
+            example: 14ueSwunUkLYdKz8xqqCqMuqXErSu4Myz4
         dateTimeAddedFrom:
           description: Starting timestamp for the time range during which the sourced data was made available
           type: string
