@@ -1493,7 +1493,10 @@ components:
           maxItems: 1000
           items:
             type: string
-            example: 14ueSwunUkLYdKz8xqqCqMuqXErSu4Myz4
+          example:
+            - 34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo
+            - 14ueSwunUkLYdKz8xqqCqMuqXErSu4Myz4
+            - '0x28C6c06298d514Db089934071355E5743bf21d60'
         dateTimeAddedFrom:
           description: Starting timestamp for the time range during which the entity was made available
           type: string
@@ -1555,7 +1558,10 @@ components:
           maxItems: 1000
           items:
             type: string
-            example: 14ueSwunUkLYdKz8xqqCqMuqXErSu4Myz4
+          example:
+            - 34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo
+            - 14ueSwunUkLYdKz8xqqCqMuqXErSu4Myz4
+            - '0x28C6c06298d514Db089934071355E5743bf21d60'
         dateTimeAddedFrom:
           description: Starting timestamp for the time range during which the sourced data was made available
           type: string
